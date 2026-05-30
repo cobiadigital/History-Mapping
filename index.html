@@ -851,50 +851,54 @@ function toggleCassini() {
 }
 
 // ── Rivers ────────────────────────────────────────────────
+let riverLayer = null;
+
 async function loadRivers() {
     try {
+        // eu_rivers.json is pre-processed from Natural Earth 10 m global +
+        // ne_10m_rivers_europe supplement — far more detail than the 50 m
+        // GeoJSON we used before. Segments are [lat, lng] pairs (Leaflet-native).
         const res = await fetch(
-            'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_rivers_lake_centerlines.geojson'
+            'https://raw.githubusercontent.com/cobiadigital/night_time_geoguesser/main/eu_rivers.json'
         );
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const geojson = await res.json();
+        const rivers = await res.json();
 
-        const riverLayer = L.geoJSON(geojson, {
-            style: feat => {
-                const rank = feat.properties.scalerank ?? 6;
-                return {
-                    color: '#5ab4d4',
-                    weight: rank <= 2 ? 2.5 : rank <= 4 ? 1.7 : 1.1,
-                    opacity: rank <= 2 ? 0.65 : rank <= 4 ? 0.52 : 0.38,
-                };
-            },
-            onEachFeature: (feat, layer) => {
-                const name = feat.properties.name
-                    || feat.properties.name_alt
-                    || feat.properties.name_en;
-                if (!name) return;
+        const lines = [];
+        for (const river of rivers) {
+            const name = river.name;
+            if (!name) continue;
+            const rank = river.scalerank ?? 6;
 
-                // Hover tooltip (desktop)
-                layer.bindTooltip(name, { sticky: true, className: 'river-tip' });
+            const style = {
+                color:   '#5ab4d4',
+                weight:  rank <= 2 ? 2.5 : rank <= 4 ? 1.8 : rank <= 6 ? 1.2 : rank <= 9 ? 0.9 : 0.7,
+                opacity: rank <= 2 ? 0.65 : rank <= 4 ? 0.54 : rank <= 6 ? 0.42 : rank <= 9 ? 0.32 : 0.22,
+                interactive: true,
+            };
 
-                // Click / tap → popup
-                layer.on('click', e => {
+            const popupContent =
+                `<div style="font-family:Georgia,serif;text-align:center">
+                    <div style="font-size:9px;color:#4a7890;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">River</div>
+                    <div style="font-size:18px;color:#8ac8e8;font-style:italic;line-height:1.2">${name}</div>
+                 </div>`;
+
+            for (const seg of river.segments) {
+                const line = L.polyline(seg, style);
+                line.bindTooltip(name, { sticky: true, className: 'river-tip' });
+                line.on('click', e => {
                     L.DomEvent.stopPropagation(e);
                     L.popup({ className: 'river-pop', closeButton: true })
                         .setLatLng(e.latlng)
-                        .setContent(
-                            `<div style="font-family:Georgia,serif;text-align:center">
-                                <div style="font-size:9px;color:#4a7890;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">River</div>
-                                <div style="font-size:18px;color:#8ac8e8;font-style:italic;line-height:1.2">${name}</div>
-                             </div>`
-                        )
+                        .setContent(popupContent)
                         .openOn(map);
                 });
+                lines.push(line);
             }
-        });
+        }
 
-        riverLayer.addTo(map);
-        riverLayer.bringToBack();   // keep rivers below route lines and markers
+        riverLayer = L.featureGroup(lines).addTo(map);
+        riverLayer.bringToBack();
 
     } catch (err) {
         console.warn('River data unavailable:', err);
