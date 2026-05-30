@@ -189,6 +189,24 @@
         .ip-close { position: absolute; top: 6px; right: 10px; cursor: pointer; color: #7a5820; font-size: 14px; flex: unset; background: transparent; border: none; padding: 0; }
         .ip-close:hover { color: #c9a84c; }
 
+        /* ── Rivers ──────────────────────────────────────────── */
+        .river-tip.leaflet-tooltip {
+            background: rgba(8, 18, 28, 0.88);
+            border: 1px solid #2a5870;
+            border-radius: 3px;
+            color: #7ec8ea;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 12px;
+            font-style: italic;
+            padding: 3px 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        .river-tip.leaflet-tooltip-top::before    { border-top-color:    #2a5870; }
+        .river-tip.leaflet-tooltip-bottom::before { border-bottom-color: #2a5870; }
+        .river-tip.leaflet-tooltip-left::before   { border-left-color:   #2a5870; }
+        .river-tip.leaflet-tooltip-right::before  { border-right-color:  #2a5870; }
+
         /* ── MOBILE UI (hidden on desktop) ───────────────────── */
         #m-header, #m-bar, #m-card, #m-overlay, #m-sheet { display: none; }
 
@@ -365,6 +383,7 @@
         <div class="leg"><div class="leg-line" style="background:#9b1111"></div>Habsburg</div>
         <div class="leg"><div class="leg-line" style="background:#1a3a8b"></div>France</div>
         <div class="leg"><div class="leg-dash"></div>Ahead</div>
+        <div class="leg"><div class="leg-line" style="background:#5ab4d4;opacity:0.75"></div>Rivers</div>
     </div>
     <div id="stop-list"></div>
     <div id="controls">
@@ -761,10 +780,69 @@ css.textContent = `
     .leaflet-bar { border-color:#4a3508 !important; }
     .leaflet-control-attribution { background:rgba(16,9,3,0.8) !important; color:#4a3208 !important; font-size:9px; }
     .leaflet-control-attribution a { color:#6a4810 !important; }
+    .river-pop .leaflet-popup-content-wrapper {
+        background:#0c1520 !important; border:1px solid #2a5870 !important;
+        border-radius:3px !important; box-shadow:0 4px 20px rgba(0,0,0,0.75) !important;
+    }
+    .river-pop .leaflet-popup-content { margin:10px 16px !important; }
+    .river-pop .leaflet-popup-tip { background:#0c1520 !important; }
+    .river-pop .leaflet-popup-close-button { color:#4a7890 !important; top:5px !important; right:8px !important; }
 `;
 document.head.appendChild(css);
 
+// ── Rivers ────────────────────────────────────────────────
+async function loadRivers() {
+    try {
+        const res = await fetch(
+            'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_rivers_lake_centerlines.geojson'
+        );
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const geojson = await res.json();
+
+        const riverLayer = L.geoJSON(geojson, {
+            style: feat => {
+                const rank = feat.properties.scalerank ?? 6;
+                return {
+                    color: '#5ab4d4',
+                    weight: rank <= 2 ? 2.5 : rank <= 4 ? 1.7 : 1.1,
+                    opacity: rank <= 2 ? 0.65 : rank <= 4 ? 0.52 : 0.38,
+                };
+            },
+            onEachFeature: (feat, layer) => {
+                const name = feat.properties.name
+                    || feat.properties.name_alt
+                    || feat.properties.name_en;
+                if (!name) return;
+
+                // Hover tooltip (desktop)
+                layer.bindTooltip(name, { sticky: true, className: 'river-tip' });
+
+                // Click / tap → popup
+                layer.on('click', e => {
+                    L.DomEvent.stopPropagation(e);
+                    L.popup({ className: 'river-pop', closeButton: true })
+                        .setLatLng(e.latlng)
+                        .setContent(
+                            `<div style="font-family:Georgia,serif;text-align:center">
+                                <div style="font-size:9px;color:#4a7890;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">River</div>
+                                <div style="font-size:18px;color:#8ac8e8;font-style:italic;line-height:1.2">${name}</div>
+                             </div>`
+                        )
+                        .openOn(map);
+                });
+            }
+        });
+
+        riverLayer.addTo(map);
+        riverLayer.bringToBack();   // keep rivers below route lines and markers
+
+    } catch (err) {
+        console.warn('River data unavailable:', err);
+    }
+}
+
 // ── Init ───────────────────────────────────────────────────
+loadRivers();
 showOverview();
 </script>
 </body>
