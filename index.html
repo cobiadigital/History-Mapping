@@ -154,6 +154,7 @@
         button:disabled { opacity: 0.32; cursor: not-allowed; }
         button.play-btn { background: #6b0000; border-color: #c9a84c; color: #f0d875; font-size: 12px; }
         button.play-btn:hover:not(:disabled) { background: #8b0000; }
+        button.layer-on { background: #1a2e1a; border-color: #4a8a4a; color: #7ec87e; }
 
         /* ── MAP ─────────────────────────────────────────────── */
         #map { flex: 1; position: relative; }
@@ -357,6 +358,27 @@
 
             #m-list { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
 
+            /* Layer toggles row inside mobile sheet */
+            .ms-layers {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-bottom: 1px solid #1e1206;
+                background: #110a03;
+                flex-shrink: 0;
+                flex-wrap: wrap;
+            }
+            .ms-layers-lbl {
+                font-size: 9px; color: #5a3e10;
+                text-transform: uppercase; letter-spacing: 1px;
+                flex-shrink: 0;
+            }
+            .ms-layers button {
+                font-size: 10px; padding: 4px 10px;
+                flex: unset; border-radius: 3px; height: auto;
+            }
+
             /* Reposition Leaflet controls */
             .leaflet-top.leaflet-right { top: 52px !important; }
             .leaflet-top.leaflet-left  { top: 52px !important; }
@@ -397,6 +419,7 @@
         <div class="btn-row">
             <button onclick="resetJourney()">↺ Reset</button>
             <button onclick="showOverview()">⊞ Overview</button>
+            <button id="btn-cassini" onclick="toggleCassini()" title="Cassini survey of France, 1756–1815">Cassini</button>
         </div>
     </div>
 </div>
@@ -461,6 +484,10 @@
             <div class="ms-stat"><span class="ms-sv">26</span><span class="ms-sl">Days</span></div>
             <div class="ms-stat"><span class="ms-sv">~1,800</span><span class="ms-sl">km</span></div>
             <div class="ms-stat"><span class="ms-sv">14</span><span class="ms-sl">Yrs old</span></div>
+        </div>
+        <div class="ms-layers">
+            <span class="ms-layers-lbl">Layers</span>
+            <button id="mb-cassini" onclick="toggleCassini()" title="Cassini survey of France, 1756–1815">Cassini Map</button>
         </div>
         <div id="m-list"></div>
     </div>
@@ -789,6 +816,39 @@ css.textContent = `
     .river-pop .leaflet-popup-close-button { color:#4a7890 !important; top:5px !important; right:8px !important; }
 `;
 document.head.appendChild(css);
+
+// ── Cassini overlay (IGN Géoplateforme, no key required) ──
+let cassiniLayer = null;
+let cassiniOn    = false;
+
+function toggleCassini() {
+    cassiniOn = !cassiniOn;
+
+    if (cassiniOn) {
+        if (!cassiniLayer) {
+            cassiniLayer = L.tileLayer(
+                'https://data.geopf.fr/wmts?' +
+                'REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0' +
+                '&LAYER=BNF-IGNF_GEOGRAPHICALGRIDSYSTEMS.CASSINI' +
+                '&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}' +
+                '&FORMAT=image/png&STYLE=normal',
+                {
+                    attribution: '© <a href="https://www.geoportail.gouv.fr/">IGN-BnF</a> · Carte de Cassini 1756–1815',
+                    maxZoom: 17,
+                    opacity: 0.72,
+                    // Tiles only exist for France; outside that they come back
+                    // transparent, so the CartoDB basemap shows through naturally.
+                }
+            );
+        }
+        cassiniLayer.addTo(map);
+    } else {
+        if (cassiniLayer) map.removeLayer(cassiniLayer);
+    }
+
+    document.getElementById('btn-cassini')?.classList.toggle('layer-on', cassiniOn);
+    document.getElementById('mb-cassini')?.classList.toggle('layer-on', cassiniOn);
+}
 
 // ── Rivers ────────────────────────────────────────────────
 async function loadRivers() {
