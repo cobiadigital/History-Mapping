@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Marie Antoinette's Journey · Vienna to Versailles, 1770</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -13,11 +13,12 @@
             font-family: 'Georgia', 'Times New Roman', serif;
             background: #1a0f07;
             height: 100vh;
+            height: 100dvh;
             display: flex;
             overflow: hidden;
         }
 
-        /* ── SIDEBAR ─────────────────────────────────────────── */
+        /* ── DESKTOP SIDEBAR ─────────────────────────────────── */
         #sidebar {
             width: 340px;
             flex-shrink: 0;
@@ -56,11 +57,7 @@
             background: #160d05;
         }
 
-        .stat {
-            text-align: center;
-            padding: 9px 4px;
-            border-right: 1px solid #251808;
-        }
+        .stat { text-align: center; padding: 9px 4px; border-right: 1px solid #251808; }
         .stat:last-child { border-right: none; }
         .stat-val { font-size: 17px; color: #c9a84c; font-weight: bold; line-height: 1; }
         .stat-lbl { font-size: 8px; color: #5a3e10; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
@@ -77,17 +74,15 @@
         }
         .leg { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #7a5820; }
         .leg-line { width: 22px; height: 3px; border-radius: 2px; }
-        .leg-dash {
-            width: 22px; height: 0;
-            border-top: 2px dashed #4a3508;
-        }
+        .leg-dash { width: 22px; height: 0; border-top: 2px dashed #4a3508; }
 
-        /* Stop list */
+        /* Desktop stop list */
         #stop-list { flex: 1; overflow-y: auto; }
         #stop-list::-webkit-scrollbar { width: 4px; }
         #stop-list::-webkit-scrollbar-track { background: #130c04; }
         #stop-list::-webkit-scrollbar-thumb { background: #4a3508; border-radius: 2px; }
 
+        /* Shared stop-item style (desktop sidebar + mobile sheet) */
         .stop-item {
             display: flex;
             align-items: flex-start;
@@ -120,44 +115,25 @@
 
         .sbadge {
             display: inline-block;
-            background: #6b0000;
-            color: #f0d875;
-            font-size: 8px;
-            padding: 1px 6px;
-            border-radius: 2px;
-            margin-top: 3px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            background: #6b0000; color: #f0d875;
+            font-size: 8px; padding: 1px 6px; border-radius: 2px;
+            margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase;
         }
 
-        /* Controls */
+        /* Desktop controls */
         #controls {
             padding: 12px 14px;
             border-top: 1px solid #4a3508;
             background: #130c04;
         }
 
-        #prog-track {
-            background: #281a07;
-            border-radius: 3px;
-            height: 3px;
-            margin-bottom: 5px;
-            overflow: hidden;
-        }
+        #prog-track { background: #281a07; border-radius: 3px; height: 3px; margin-bottom: 5px; overflow: hidden; }
         #prog-fill {
             height: 100%;
             background: linear-gradient(90deg, #8b0000 0%, #2a4a8b 100%);
-            width: 0%;
-            transition: width 0.6s ease;
-            border-radius: 3px;
+            width: 0%; transition: width 0.6s ease; border-radius: 3px;
         }
-        #prog-text {
-            font-size: 10px;
-            color: #5a3e10;
-            text-align: center;
-            margin-bottom: 9px;
-            min-height: 13px;
-        }
+        #prog-text { font-size: 10px; color: #5a3e10; text-align: center; margin-bottom: 9px; min-height: 13px; }
 
         .btn-row { display: flex; gap: 6px; margin-bottom: 6px; }
 
@@ -176,51 +152,31 @@
         }
         button:hover:not(:disabled) { background: #2d1c09; border-color: #c9a84c; }
         button:disabled { opacity: 0.32; cursor: not-allowed; }
-
-        button.play-btn {
-            background: #6b0000;
-            border-color: #c9a84c;
-            color: #f0d875;
-            font-size: 12px;
-        }
+        button.play-btn { background: #6b0000; border-color: #c9a84c; color: #f0d875; font-size: 12px; }
         button.play-btn:hover:not(:disabled) { background: #8b0000; }
 
         /* ── MAP ─────────────────────────────────────────────── */
         #map { flex: 1; position: relative; }
 
-        /* Date overlay */
+        /* Desktop overlays */
         #date-ov {
             position: absolute;
-            bottom: 34px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 34px; left: 50%; transform: translateX(-50%);
             z-index: 1000;
             background: rgba(16, 9, 3, 0.9);
-            border: 1px solid #6b4e12;
-            border-radius: 3px;
-            padding: 9px 22px;
-            text-align: center;
-            pointer-events: none;
-            transition: opacity 0.35s;
-            white-space: nowrap;
+            border: 1px solid #6b4e12; border-radius: 3px;
+            padding: 9px 22px; text-align: center;
+            pointer-events: none; transition: opacity 0.35s; white-space: nowrap;
         }
         #date-ov.hidden { opacity: 0; }
         .ov-city { font-size: 15px; color: #f0d875; font-weight: bold; }
         .ov-date { font-size: 11px; color: #9a7830; font-style: italic; margin-top: 2px; }
         .ov-day  { font-size: 10px; color: #5a3e10; margin-top: 1px; }
 
-        /* Info panel (top-right when auto-playing) */
         #info-panel {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            z-index: 1000;
-            background: rgba(16, 9, 3, 0.92);
-            border: 1px solid #6b4e12;
-            border-radius: 3px;
-            padding: 12px 16px;
-            max-width: 270px;
-            display: none;
+            position: absolute; top: 16px; right: 16px; z-index: 1000;
+            background: rgba(16, 9, 3, 0.92); border: 1px solid #6b4e12; border-radius: 3px;
+            padding: 12px 16px; max-width: 270px; display: none;
             backdrop-filter: blur(3px);
         }
         #info-panel.visible { display: block; }
@@ -229,51 +185,188 @@
         .ip-loc  { font-size: 11px; color: #c9a84c; font-style: italic; }
         .ip-date { font-size: 11px; color: #9a7030; margin-top: 6px; }
         .ip-notes{ font-size: 11px; color: #c0a060; margin-top: 6px; line-height: 1.55; font-style: italic; }
-        .ip-badge{
-            display: inline-block;
-            background: #7b0000;
-            color: #f0d875;
-            font-size: 9px;
-            padding: 2px 8px;
-            border-radius: 2px;
-            margin-top: 7px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        .ip-close {
-            position: absolute; top: 6px; right: 10px;
-            cursor: pointer; color: #7a5820; font-size: 14px;
-            flex: unset; background: transparent; border: none; padding: 0;
-        }
+        .ip-badge{ display: inline-block; background: #7b0000; color: #f0d875; font-size: 9px; padding: 2px 8px; border-radius: 2px; margin-top: 7px; letter-spacing: 1px; text-transform: uppercase; }
+        .ip-close { position: absolute; top: 6px; right: 10px; cursor: pointer; color: #7a5820; font-size: 14px; flex: unset; background: transparent; border: none; padding: 0; }
         .ip-close:hover { color: #c9a84c; }
+
+        /* ── MOBILE UI (hidden on desktop) ───────────────────── */
+        #m-header, #m-bar, #m-card, #m-overlay, #m-sheet { display: none; }
+
+        @media (max-width: 768px) {
+            #sidebar { display: none; }
+            #date-ov, #info-panel { display: none !important; }
+            #map { width: 100vw; height: 100dvh; }
+
+            /* Floating title header */
+            #m-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 0; left: 0; right: 0;
+                height: 46px;
+                z-index: 1001;
+                background: rgba(12, 7, 2, 0.88);
+                border-bottom: 1px solid #5a3e0e;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                padding: 0 12px;
+            }
+            .mh-title { font-size: 11px; color: #f0d875; letter-spacing: 1.5px; text-transform: uppercase; }
+            .mh-sub   { font-size: 9px; color: #8a6828; font-style: italic; margin-top: 1px; }
+
+            /* Stop info card — slides up from above controls bar */
+            #m-card {
+                display: none;
+                position: absolute;
+                left: 0; right: 0; bottom: 62px;
+                z-index: 1003;
+                background: rgba(12, 7, 2, 0.94);
+                border-top: 1px solid #6b4e12;
+                padding: 13px 48px 16px 15px;
+                max-height: 44vh;
+                overflow-y: auto;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            #m-card.show { display: block; }
+
+            .mc-close {
+                position: absolute; top: 10px; right: 12px;
+                background: transparent; border: none; color: #6a4812;
+                font-size: 16px; cursor: pointer; flex: unset; padding: 4px 6px;
+            }
+            .mc-close:hover { color: #c9a84c; }
+            .mc-num   { font-size: 9px; color: #6a4812; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+            .mc-city  { font-size: 22px; color: #f0d875; font-weight: bold; line-height: 1.2; }
+            .mc-loc   { font-size: 12px; color: #c9a84c; font-style: italic; margin-top: 1px; }
+            .mc-date  { font-size: 11px; color: #9a7030; margin-top: 8px; }
+            .mc-notes { font-size: 12px; color: #c8a860; margin-top: 7px; line-height: 1.65; font-style: italic; }
+            .mc-badge-pill {
+                display: inline-block; background: #7b0000; color: #f0d875;
+                font-size: 9px; padding: 2px 9px; border-radius: 2px;
+                margin-top: 9px; letter-spacing: 1px; text-transform: uppercase;
+            }
+
+            /* Floating controls bar */
+            #m-bar {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                position: absolute;
+                bottom: 0; left: 0; right: 0;
+                height: 62px;
+                z-index: 1002;
+                background: rgba(12, 7, 2, 0.93);
+                border-top: 1px solid #5a3e0e;
+                padding: 0 10px env(safe-area-inset-bottom, 0);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            #m-bar button {
+                background: transparent;
+                padding: 0;
+                height: 46px;
+                font-size: 18px;
+                border-radius: 5px;
+                letter-spacing: 0;
+                min-width: 0;
+            }
+            #m-bar button:hover:not(:disabled) {
+                background: rgba(201,168,76,0.1);
+                border-color: #c9a84c;
+            }
+            .mb-play {
+                flex: 1.8 !important;
+                background: rgba(107,0,0,0.55) !important;
+                border-color: #c9a84c !important;
+                color: #f0d875 !important;
+                font-size: 20px !important;
+            }
+            .mb-play:hover:not(:disabled) { background: rgba(139,0,0,0.7) !important; }
+
+            /* Sheet backdrop */
+            #m-overlay {
+                display: none;
+                position: absolute; inset: 0;
+                background: rgba(0,0,0,0.55);
+                z-index: 1004;
+            }
+            #m-overlay.show { display: block; }
+
+            /* Slide-up stop list sheet */
+            #m-sheet {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                bottom: 0; left: 0; right: 0;
+                z-index: 1005;
+                background: #1a0f06;
+                border-top: 2px solid #6b4e12;
+                max-height: 74vh;
+                transform: translateY(100%);
+                transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1);
+            }
+            #m-sheet.open { transform: translateY(0); }
+
+            .ms-handle {
+                width: 38px; height: 4px; background: #4a3508; border-radius: 2px;
+                margin: 10px auto 0; flex-shrink: 0;
+            }
+            .ms-head {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 8px 14px; border-bottom: 1px solid #2a1808; flex-shrink: 0;
+            }
+            .ms-head span { font-size: 11px; color: #c9a84c; letter-spacing: 1px; text-transform: uppercase; }
+            .ms-close {
+                background: transparent; border: none; color: #6a4812;
+                font-size: 16px; cursor: pointer; flex: unset; padding: 4px 6px;
+            }
+            .ms-close:hover { color: #c9a84c; }
+
+            .ms-stats {
+                display: flex; border-bottom: 1px solid #1e1206;
+                background: #140d04; flex-shrink: 0;
+            }
+            .ms-stat {
+                flex: 1; text-align: center; padding: 8px 4px;
+                border-right: 1px solid #1e1206;
+            }
+            .ms-stat:last-child { border-right: none; }
+            .ms-sv { display: block; font-size: 16px; color: #c9a84c; font-weight: bold; line-height: 1; }
+            .ms-sl { display: block; font-size: 8px; color: #5a3e10; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+            #m-list { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+            /* Reposition Leaflet controls */
+            .leaflet-top.leaflet-right { top: 52px !important; }
+            .leaflet-top.leaflet-left  { top: 52px !important; }
+            .leaflet-bottom { bottom: 64px !important; }
+        }
     </style>
 </head>
 <body>
 
-<!-- ── SIDEBAR ───────────────────────────────────────────── -->
+<!-- ── DESKTOP SIDEBAR ───────────────────────────────────── -->
 <div id="sidebar">
-
     <div id="sidebar-header">
         <div class="ornament">✦ ✦ ✦</div>
         <h1>Marie Antoinette's<br>Journey to Versailles</h1>
         <div class="journey-sub">Vienna → Versailles · April – May 1770</div>
     </div>
-
     <div id="stats">
         <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">Stops</div></div>
         <div class="stat"><div class="stat-val">26</div><div class="stat-lbl">Days</div></div>
         <div class="stat"><div class="stat-val">~1,800</div><div class="stat-lbl">km</div></div>
         <div class="stat"><div class="stat-val">14</div><div class="stat-lbl">Yrs old</div></div>
     </div>
-
     <div id="legend">
         <div class="leg"><div class="leg-line" style="background:#9b1111"></div>Habsburg</div>
         <div class="leg"><div class="leg-line" style="background:#1a3a8b"></div>France</div>
         <div class="leg"><div class="leg-dash"></div>Ahead</div>
     </div>
-
     <div id="stop-list"></div>
-
     <div id="controls">
         <div id="prog-track"><div id="prog-fill"></div></div>
         <div id="prog-text">Select a stop or press Play</div>
@@ -291,6 +384,8 @@
 
 <!-- ── MAP ──────────────────────────────────────────────── -->
 <div id="map">
+
+    <!-- Desktop overlays -->
     <div id="date-ov" class="hidden">
         <div class="ov-city" id="ov-city"></div>
         <div class="ov-date" id="ov-date"></div>
@@ -304,6 +399,51 @@
         <div class="ip-date" id="ip-date"></div>
         <div class="ip-notes" id="ip-notes"></div>
         <div id="ip-badge-wrap"></div>
+    </div>
+
+    <!-- Mobile: floating title -->
+    <div id="m-header">
+        <div class="mh-title">✦ Marie Antoinette · 1770 ✦</div>
+        <div class="mh-sub">Vienna → Versailles</div>
+    </div>
+
+    <!-- Mobile: stop info card -->
+    <div id="m-card">
+        <button class="mc-close" onclick="closeMobileCard()">✕</button>
+        <div class="mc-num"   id="mc-num"></div>
+        <div class="mc-city"  id="mc-city"></div>
+        <div class="mc-loc"   id="mc-loc"></div>
+        <div class="mc-date"  id="mc-date"></div>
+        <div class="mc-notes" id="mc-notes"></div>
+        <div id="mc-badge"></div>
+    </div>
+
+    <!-- Mobile: controls bar -->
+    <div id="m-bar">
+        <button onclick="showOverview()" title="Overview">⊞</button>
+        <button id="mb-prev" onclick="prevStop()" disabled>◀</button>
+        <button id="mb-play" class="mb-play" onclick="togglePlay()">▶</button>
+        <button id="mb-next" onclick="nextStop()">▶</button>
+        <button onclick="toggleSheet()" title="All Stops">≡</button>
+    </div>
+
+    <!-- Mobile: sheet backdrop -->
+    <div id="m-overlay" onclick="closeSheet()"></div>
+
+    <!-- Mobile: stop list sheet -->
+    <div id="m-sheet">
+        <div class="ms-handle"></div>
+        <div class="ms-head">
+            <span>The Journey · 11 Stops</span>
+            <button class="ms-close" onclick="closeSheet()">✕</button>
+        </div>
+        <div class="ms-stats">
+            <div class="ms-stat"><span class="ms-sv">11</span><span class="ms-sl">Stops</span></div>
+            <div class="ms-stat"><span class="ms-sv">26</span><span class="ms-sl">Days</span></div>
+            <div class="ms-stat"><span class="ms-sv">~1,800</span><span class="ms-sl">km</span></div>
+            <div class="ms-stat"><span class="ms-sv">14</span><span class="ms-sl">Yrs old</span></div>
+        </div>
+        <div id="m-list"></div>
     </div>
 </div>
 
@@ -323,14 +463,17 @@ const STOPS = [
     { order:11, city:'Versailles', loc:'Palace of Versailles',      date:'16 May 1770',    cert:'exact',  day:26, lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin that same evening', badge:'Wedding Day' },
 ];
 
-// Habsburg territory ends at Kehl (index 6)
 const HABSBURG_END = 6;
 
 // ── State ──────────────────────────────────────────────────
-let current = -1;
-let playing  = false;
-let playTimer = null;
+let current     = -1;
+let playing     = false;
+let playTimer   = null;
+let sheetOpen   = false;
 let leafMarkers = [];
+
+// ── Mobile detection ───────────────────────────────────────
+function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
 
 // ── Map init ───────────────────────────────────────────────
 const map = L.map('map', { center:[48.4, 9.5], zoom:6, zoomControl:true });
@@ -343,15 +486,9 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 // ── Route polylines ────────────────────────────────────────
 const COORDS = STOPS.map(s => [s.lat, s.lng]);
 
-// Ghost (always visible, muted dashed)
-L.polyline(COORDS.slice(0, HABSBURG_END+1), {
-    color:'#8b1111', weight:1.5, opacity:0.15, dashArray:'6 9'
-}).addTo(map);
-L.polyline(COORDS.slice(HABSBURG_END), {
-    color:'#1a3a8b', weight:1.5, opacity:0.15, dashArray:'6 9'
-}).addTo(map);
+L.polyline(COORDS.slice(0, HABSBURG_END+1), { color:'#8b1111', weight:1.5, opacity:0.15, dashArray:'6 9' }).addTo(map);
+L.polyline(COORDS.slice(HABSBURG_END),      { color:'#1a3a8b', weight:1.5, opacity:0.15, dashArray:'6 9' }).addTo(map);
 
-// Revealed (built up as journey progresses)
 const lineH = L.polyline([], { color:'#9b1111', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
 const lineF = L.polyline([], { color:'#1a3a8b', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
 
@@ -366,7 +503,7 @@ function revealRoute(idx) {
     }
 }
 
-// ── Custom markers ─────────────────────────────────────────
+// ── Markers ────────────────────────────────────────────────
 function mkIcon(stop, state) {
     const isLast = stop.order === 11;
     const CFG = {
@@ -374,11 +511,9 @@ function mkIcon(stop, state) {
         visited: { bg:'#c9a84c', bd:'#7a6010', tx:'#160d04', sz:26 },
         active:  { bg: isLast ? '#3e006a' : '#8b0000', bd:'#f0d875', tx:'#f0d875', sz:34 },
     }[state];
-
     const glow = state==='active'
         ? `0 0 14px ${isLast?'rgba(62,0,106,0.75)':'rgba(139,0,0,0.7)'}, 0 2px 7px rgba(0,0,0,0.5)`
         : '0 1px 4px rgba(0,0,0,0.3)';
-
     return L.divIcon({
         className:'',
         html:`<div style="
@@ -389,8 +524,7 @@ function mkIcon(stop, state) {
             box-shadow:${glow};cursor:pointer;
             margin-left:${-CFG.sz/2}px;margin-top:${-CFG.sz/2}px;
         ">${stop.order}</div>`,
-        iconSize:[CFG.sz, CFG.sz],
-        iconAnchor:[CFG.sz/2, CFG.sz/2]
+        iconSize:[CFG.sz,CFG.sz], iconAnchor:[CFG.sz/2,CFG.sz/2]
     });
 }
 
@@ -408,23 +542,26 @@ function popupHTML(s) {
     </div>`;
 }
 
-// Create markers
 STOPS.forEach((s, i) => {
     const m = L.marker([s.lat, s.lng], {
         icon: mkIcon(s, 'future'),
         zIndexOffset: i===10 ? 1000 : i
     }).addTo(map);
     m.bindPopup(popupHTML(s), { maxWidth:300, className:'ma-popup' });
-    m.on('click', () => { if (!playing) goTo(i); });
+    m.on('click', () => {
+        if (!playing) {
+            goTo(i);
+            if (isMobile()) leafMarkers[i].closePopup();
+        }
+    });
     leafMarkers.push(m);
 });
 
-// ── Sidebar stop list ──────────────────────────────────────
-const listEl = document.getElementById('stop-list');
-STOPS.forEach((s, i) => {
+// ── Stop lists (desktop sidebar + mobile sheet) ────────────
+function buildStopItem(s, i, idPrefix) {
     const el = document.createElement('div');
     el.className = 'stop-item';
-    el.id = `si-${i}`;
+    el.id = `${idPrefix}${i}`;
     el.innerHTML = `
         <div class="snum">${s.order}</div>
         <div class="stxt">
@@ -435,7 +572,14 @@ STOPS.forEach((s, i) => {
         </div>
         <div class="sdayn">Day ${s.day}</div>`;
     el.onclick = () => goTo(i);
-    listEl.appendChild(el);
+    return el;
+}
+
+const desktopList = document.getElementById('stop-list');
+const mobileList  = document.getElementById('m-list');
+STOPS.forEach((s, i) => {
+    desktopList.appendChild(buildStopItem(s, i, 'si-'));
+    mobileList.appendChild(buildStopItem(s, i, 'ms-'));
 });
 
 // ── Core navigation ────────────────────────────────────────
@@ -445,43 +589,53 @@ function goTo(idx) {
 
     // Markers
     leafMarkers.forEach((m, i) => {
-        const state = i < idx ? 'visited' : i===idx ? 'active' : 'future';
-        m.setIcon(mkIcon(STOPS[i], state));
+        m.setIcon(mkIcon(STOPS[i], i < idx ? 'visited' : i===idx ? 'active' : 'future'));
         m.setZIndexOffset(i===idx ? 2000 : i===10 ? 1000 : i);
         if (i !== idx) m.closePopup();
     });
 
-    // Route lines
+    // Route
     revealRoute(idx);
 
-    // Sidebar list
-    document.querySelectorAll('.stop-item').forEach((el, i) => {
+    // Desktop sidebar list
+    document.querySelectorAll('#stop-list .stop-item').forEach((el, i) => {
         el.classList.toggle('active',  i===idx);
         el.classList.toggle('visited', i<idx);
     });
-    document.getElementById(`si-${idx}`).scrollIntoView({ behavior:'smooth', block:'nearest' });
+    document.getElementById(`si-${idx}`)?.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
-    // Bottom date overlay
+    // Mobile sheet list
+    document.querySelectorAll('#m-list .stop-item').forEach((el, i) => {
+        el.classList.toggle('active',  i===idx);
+        el.classList.toggle('visited', i<idx);
+    });
+
+    // Desktop: date overlay + info panel
     document.getElementById('ov-city').textContent = s.city;
     document.getElementById('ov-date').textContent = s.date;
     document.getElementById('ov-day').textContent  = `Day ${s.day} of the journey`;
     document.getElementById('date-ov').classList.remove('hidden');
-
-    // Info panel (show during play, or on click)
     showInfoPanel(s);
 
-    // Fly + popup
-    map.flyTo([s.lat, s.lng], 9, { duration:1.4, easeLinearity:0.5 });
-    setTimeout(() => leafMarkers[idx].openPopup(), 1500);
-
-    // Progress bar + label
+    // Desktop: progress + nav buttons
     document.getElementById('prog-fill').style.width = ((idx+1)/STOPS.length*100)+'%';
     document.getElementById('prog-text').textContent = `Stop ${idx+1} of ${STOPS.length}: ${s.city}`;
     document.getElementById('btn-prev').disabled = idx <= 0;
     document.getElementById('btn-next').disabled = idx >= STOPS.length-1;
+
+    // Mobile: card + nav + close sheet
+    if (isMobile()) {
+        closeSheet();
+        updateMobileCard(s);
+    }
+    syncMobileNav(idx);
+
+    // Fly + popup (desktop only)
+    map.flyTo([s.lat, s.lng], 9, { duration:1.4, easeLinearity:0.5 });
+    if (!isMobile()) setTimeout(() => leafMarkers[idx].openPopup(), 1500);
 }
 
-// ── Info panel ─────────────────────────────────────────────
+// ── Desktop info panel ─────────────────────────────────────
 function showInfoPanel(s) {
     document.getElementById('ip-num').textContent   = `Stop ${s.order} of 11 · Day ${s.day}`;
     document.getElementById('ip-city').textContent  = s.city;
@@ -492,9 +646,44 @@ function showInfoPanel(s) {
         ? `<div class="ip-badge">✦ ${s.badge}</div>` : '';
     document.getElementById('info-panel').classList.add('visible');
 }
+function closeInfoPanel() { document.getElementById('info-panel').classList.remove('visible'); }
 
-function closeInfoPanel() {
-    document.getElementById('info-panel').classList.remove('visible');
+// ── Mobile helpers ─────────────────────────────────────────
+function updateMobileCard(s) {
+    const approx = s.cert==='approx' ? ' (approx.)' : '';
+    document.getElementById('mc-num').textContent   = `Stop ${s.order} of 11 · Day ${s.day}`;
+    document.getElementById('mc-city').textContent  = s.city;
+    document.getElementById('mc-loc').textContent   = s.loc;
+    document.getElementById('mc-date').textContent  = s.date + approx;
+    document.getElementById('mc-notes').textContent = s.notes;
+    document.getElementById('mc-badge').innerHTML   = s.badge
+        ? `<div class="mc-badge-pill">✦ ${s.badge}</div>` : '';
+    document.getElementById('m-card').classList.add('show');
+}
+function closeMobileCard() { document.getElementById('m-card').classList.remove('show'); }
+
+function syncMobileNav(idx) {
+    const prev = document.getElementById('mb-prev');
+    const next = document.getElementById('mb-next');
+    if (prev) prev.disabled = idx <= 0;
+    if (next) next.disabled = idx >= STOPS.length-1;
+}
+
+function syncMobilePlayBtn() {
+    const btn = document.getElementById('mb-play');
+    if (btn) btn.textContent = playing ? '⏸' : '▶';
+}
+
+function toggleSheet() { sheetOpen ? closeSheet() : openSheet(); }
+function openSheet() {
+    sheetOpen = true;
+    document.getElementById('m-sheet').classList.add('open');
+    document.getElementById('m-overlay').classList.add('show');
+}
+function closeSheet() {
+    sheetOpen = false;
+    document.getElementById('m-sheet').classList.remove('open');
+    document.getElementById('m-overlay').classList.remove('show');
 }
 
 // ── Playback ───────────────────────────────────────────────
@@ -506,6 +695,7 @@ function togglePlay() { playing ? pauseJourney() : startJourney(); }
 function startJourney() {
     playing = true;
     document.getElementById('btn-play').textContent = '⏸ Pause';
+    syncMobilePlayBtn();
     if (current >= STOPS.length-1) { current = -1; clearVisuals(); }
 
     function step() {
@@ -521,6 +711,7 @@ function startJourney() {
 function pauseJourney() {
     playing = false;
     document.getElementById('btn-play').textContent = '▶ Play';
+    syncMobilePlayBtn();
     clearTimeout(playTimer);
     playTimer = null;
 }
@@ -532,13 +723,16 @@ function clearVisuals() {
         m.closePopup();
     });
     revealRoute(-1);
-    document.querySelectorAll('.stop-item').forEach(el => el.classList.remove('active','visited'));
+    document.querySelectorAll('#stop-list .stop-item, #m-list .stop-item')
+        .forEach(el => el.classList.remove('active','visited'));
     document.getElementById('prog-fill').style.width = '0%';
     document.getElementById('prog-text').textContent = 'Select a stop or press Play';
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-next').disabled = false;
     document.getElementById('date-ov').classList.add('hidden');
     closeInfoPanel();
+    closeMobileCard();
+    syncMobileNav(-1);
 }
 
 function resetJourney() {
@@ -553,13 +747,11 @@ function showOverview() {
 }
 
 // ── Leaflet style overrides ────────────────────────────────
-const style = document.createElement('style');
-style.textContent = `
+const css = document.createElement('style');
+css.textContent = `
     .ma-popup .leaflet-popup-content-wrapper {
-        background:#1c1006 !important;
-        border:1px solid #6b4e12 !important;
-        border-radius:3px !important;
-        color:#e8d5a3 !important;
+        background:#1c1006 !important; border:1px solid #6b4e12 !important;
+        border-radius:3px !important; color:#e8d5a3 !important;
         box-shadow:0 4px 24px rgba(0,0,0,0.75);
     }
     .ma-popup .leaflet-popup-tip { background:#1c1006 !important; }
@@ -570,7 +762,7 @@ style.textContent = `
     .leaflet-control-attribution { background:rgba(16,9,3,0.8) !important; color:#4a3208 !important; font-size:9px; }
     .leaflet-control-attribution a { color:#6a4810 !important; }
 `;
-document.head.appendChild(style);
+document.head.appendChild(css);
 
 // ── Init ───────────────────────────────────────────────────
 showOverview();
