@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marie Antoinette's Journey · Vienna to Versailles, 1770</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #1a0f07;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── SIDEBAR ─────────────────────────────────────────── */
+        #sidebar {
+            width: 340px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background: #1e1107;
+            border-right: 2px solid #6b4e12;
+            overflow: hidden;
+        }
+
+        #sidebar-header {
+            background: #130c04;
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid #4a3508;
+        }
+
+        .ornament { color: #c9a84c; font-size: 14px; letter-spacing: 10px; margin-bottom: 6px; }
+
+        h1 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f0d875;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            line-height: 1.6;
+        }
+
+        .journey-sub { font-size: 11px; color: #9a7830; font-style: italic; margin-top: 3px; }
+
+        /* Stats */
+        #stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid #2a1c08;
+            background: #160d05;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 9px 4px;
+            border-right: 1px solid #251808;
+        }
+        .stat:last-child { border-right: none; }
+        .stat-val { font-size: 17px; color: #c9a84c; font-weight: bold; line-height: 1; }
+        .stat-lbl { font-size: 8px; color: #5a3e10; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+        /* Legend */
+        #legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 7px 14px;
+            border-bottom: 1px solid #201508;
+            background: #150c04;
+            flex-wrap: wrap;
+        }
+        .leg { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #7a5820; }
+        .leg-line { width: 22px; height: 3px; border-radius: 2px; }
+        .leg-dash {
+            width: 22px; height: 0;
+            border-top: 2px dashed #4a3508;
+        }
+
+        /* Stop list */
+        #stop-list { flex: 1; overflow-y: auto; }
+        #stop-list::-webkit-scrollbar { width: 4px; }
+        #stop-list::-webkit-scrollbar-track { background: #130c04; }
+        #stop-list::-webkit-scrollbar-thumb { background: #4a3508; border-radius: 2px; }
+
+        .stop-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 9px 12px 9px 14px;
+            cursor: pointer;
+            transition: background 0.12s;
+            border-bottom: 1px solid #1c1206;
+            border-left: 3px solid transparent;
+        }
+        .stop-item:hover { background: rgba(201,168,76,0.07); }
+        .stop-item.active { background: rgba(139,0,0,0.12); border-left-color: #c9a84c; }
+        .stop-item.visited { opacity: 0.62; }
+
+        .snum {
+            width: 21px; height: 21px; border-radius: 50%;
+            background: #281a07; border: 1.5px solid #43300a;
+            color: #8a6030; font-size: 10px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-right: 10px; margin-top: 2px;
+        }
+        .stop-item.active .snum { background: #8b0000; border-color: #c9a84c; color: #f0d875; }
+        .stop-item.visited .snum { background: #2e1e08; border-color: #4a3208; color: #7a5820; }
+
+        .stxt { flex: 1; min-width: 0; }
+        .scity { font-size: 13px; color: #d0b882; font-weight: bold; }
+        .stop-item.active .scity { color: #f0d875; }
+        .sloc { font-size: 10px; color: #6a4812; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sdate { font-size: 10px; color: #4a3208; margin-top: 1px; }
+        .sdayn { font-size: 10px; color: #4a3208; flex-shrink: 0; margin-left: 8px; white-space: nowrap; }
+
+        .sbadge {
+            display: inline-block;
+            background: #6b0000;
+            color: #f0d875;
+            font-size: 8px;
+            padding: 1px 6px;
+            border-radius: 2px;
+            margin-top: 3px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Controls */
+        #controls {
+            padding: 12px 14px;
+            border-top: 1px solid #4a3508;
+            background: #130c04;
+        }
+
+        #prog-track {
+            background: #281a07;
+            border-radius: 3px;
+            height: 3px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+        #prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b0000 0%, #2a4a8b 100%);
+            width: 0%;
+            transition: width 0.6s ease;
+            border-radius: 3px;
+        }
+        #prog-text {
+            font-size: 10px;
+            color: #5a3e10;
+            text-align: center;
+            margin-bottom: 9px;
+            min-height: 13px;
+        }
+
+        .btn-row { display: flex; gap: 6px; margin-bottom: 6px; }
+
+        button {
+            flex: 1;
+            font-family: Georgia, serif;
+            background: #211407;
+            border: 1px solid #43300a;
+            color: #c9a84c;
+            padding: 7px 4px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-radius: 2px;
+            transition: all 0.12s;
+        }
+        button:hover:not(:disabled) { background: #2d1c09; border-color: #c9a84c; }
+        button:disabled { opacity: 0.32; cursor: not-allowed; }
+
+        button.play-btn {
+            background: #6b0000;
+            border-color: #c9a84c;
+            color: #f0d875;
+            font-size: 12px;
+        }
+        button.play-btn:hover:not(:disabled) { background: #8b0000; }
+
+        /* ── MAP ─────────────────────────────────────────────── */
+        #map { flex: 1; position: relative; }
+
+        /* Date overlay */
+        #date-ov {
+            position: absolute;
+            bottom: 34px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(16, 9, 3, 0.9);
+            border: 1px solid #6b4e12;
+            border-radius: 3px;
+            padding: 9px 22px;
+            text-align: center;
+            pointer-events: none;
+            transition: opacity 0.35s;
+            white-space: nowrap;
+        }
+        #date-ov.hidden { opacity: 0; }
+        .ov-city { font-size: 15px; color: #f0d875; font-weight: bold; }
+        .ov-date { font-size: 11px; color: #9a7830; font-style: italic; margin-top: 2px; }
+        .ov-day  { font-size: 10px; color: #5a3e10; margin-top: 1px; }
+
+        /* Info panel (top-right when auto-playing) */
+        #info-panel {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            background: rgba(16, 9, 3, 0.92);
+            border: 1px solid #6b4e12;
+            border-radius: 3px;
+            padding: 12px 16px;
+            max-width: 270px;
+            display: none;
+            backdrop-filter: blur(3px);
+        }
+        #info-panel.visible { display: block; }
+        .ip-num  { font-size: 9px; color: #6a4812; letter-spacing: 2px; text-transform: uppercase; }
+        .ip-city { font-size: 18px; color: #f0d875; font-weight: bold; line-height: 1.2; }
+        .ip-loc  { font-size: 11px; color: #c9a84c; font-style: italic; }
+        .ip-date { font-size: 11px; color: #9a7030; margin-top: 6px; }
+        .ip-notes{ font-size: 11px; color: #c0a060; margin-top: 6px; line-height: 1.55; font-style: italic; }
+        .ip-badge{
+            display: inline-block;
+            background: #7b0000;
+            color: #f0d875;
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-top: 7px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .ip-close {
+            position: absolute; top: 6px; right: 10px;
+            cursor: pointer; color: #7a5820; font-size: 14px;
+            flex: unset; background: transparent; border: none; padding: 0;
+        }
+        .ip-close:hover { color: #c9a84c; }
+    </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ───────────────────────────────────────────── -->
+<div id="sidebar">
+
+    <div id="sidebar-header">
+        <div class="ornament">✦ ✦ ✦</div>
+        <h1>Marie Antoinette's<br>Journey to Versailles</h1>
+        <div class="journey-sub">Vienna → Versailles · April – May 1770</div>
+    </div>
+
+    <div id="stats">
+        <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">Stops</div></div>
+        <div class="stat"><div class="stat-val">26</div><div class="stat-lbl">Days</div></div>
+        <div class="stat"><div class="stat-val">~1,800</div><div class="stat-lbl">km</div></div>
+        <div class="stat"><div class="stat-val">14</div><div class="stat-lbl">Yrs old</div></div>
+    </div>
+
+    <div id="legend">
+        <div class="leg"><div class="leg-line" style="background:#9b1111"></div>Habsburg</div>
+        <div class="leg"><div class="leg-line" style="background:#1a3a8b"></div>France</div>
+        <div class="leg"><div class="leg-dash"></div>Ahead</div>
+    </div>
+
+    <div id="stop-list"></div>
+
+    <div id="controls">
+        <div id="prog-track"><div id="prog-fill"></div></div>
+        <div id="prog-text">Select a stop or press Play</div>
+        <div class="btn-row">
+            <button id="btn-prev" onclick="prevStop()" disabled>◀ Prev</button>
+            <button id="btn-play" class="play-btn" onclick="togglePlay()">▶ Play</button>
+            <button id="btn-next" onclick="nextStop()">Next ▶</button>
+        </div>
+        <div class="btn-row">
+            <button onclick="resetJourney()">↺ Reset</button>
+            <button onclick="showOverview()">⊞ Overview</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── MAP ──────────────────────────────────────────────── -->
+<div id="map">
+    <div id="date-ov" class="hidden">
+        <div class="ov-city" id="ov-city"></div>
+        <div class="ov-date" id="ov-date"></div>
+        <div class="ov-day"  id="ov-day"></div>
+    </div>
+    <div id="info-panel">
+        <button class="ip-close" onclick="closeInfoPanel()">✕</button>
+        <div class="ip-num"  id="ip-num"></div>
+        <div class="ip-city" id="ip-city"></div>
+        <div class="ip-loc"  id="ip-loc"></div>
+        <div class="ip-date" id="ip-date"></div>
+        <div class="ip-notes" id="ip-notes"></div>
+        <div id="ip-badge-wrap"></div>
+    </div>
+</div>
+
+<script>
+// ── Data ───────────────────────────────────────────────────
+const STOPS = [
+    { order:1,  city:'Vienna',     loc:'Schönbrunn Palace',         date:'21 Apr 1770',    cert:'exact',  day:1,  lat:48.1858124, lng:16.3127641, notes:'Departure; procession of ~57 carriages and 450 horses', badge:null },
+    { order:2,  city:'Melk',       loc:'Melk Abbey',                date:'21–22 Apr 1770', cert:'approx', day:2,  lat:48.2282795, lng:15.3312091, notes:'First overnight stop; met by brother Joseph II', badge:null },
+    { order:3,  city:'Lambach',    loc:'Lambach Abbey',             date:'23 Apr 1770',    cert:'approx', day:3,  lat:48.0912808, lng:13.8754787, notes:'Rococo theatre performance on the River Traun', badge:null },
+    { order:4,  city:'Munich',     loc:'Nymphenburg / Amalienburg', date:'24–25 Apr 1770', cert:'approx', day:5,  lat:48.1582675, lng:11.5033143, notes:'Entered Bavaria; granted a day of rest', badge:null },
+    { order:5,  city:'Günzburg',   loc:'Swabia',                    date:'27–28 Apr 1770', cert:'approx', day:8,  lat:48.4528412, lng:10.2775127, notes:'Broke journey ~2 days; joined by aunt Anne Charlotte of Lorraine', badge:null },
+    { order:6,  city:'Freiburg',   loc:'Freiburg im Breisgau',      date:'4–5 May 1770',   cert:'approx', day:15, lat:47.9990077, lng:7.8421043,  notes:'Among last stops on Habsburg-controlled soil', badge:null },
+    { order:7,  city:'Kehl',       loc:'Rhine Island',              date:'7 May 1770',     cert:'exact',  day:17, lat:48.5788725, lng:7.8160821,  notes:'The remise: stripped of all things Austrian and re-dressed as French on an island in the Rhine', badge:'The Remise' },
+    { order:8,  city:'Strasbourg', loc:'Strasbourg Cathedral',      date:'7–8 May 1770',   cert:'approx', day:18, lat:48.5818799, lng:7.7510348,  notes:'First French city; Thanksgiving Mass and illuminations', badge:null },
+    { order:9,  city:'Compiègne',  loc:'Château de Compiègne',      date:'14 May 1770',    cert:'exact',  day:24, lat:49.4192921, lng:2.8311798,  notes:'First meeting with Louis XV and the Dauphin', badge:'Meets the Dauphin' },
+    { order:10, city:'Paris',      loc:'Château de la Muette',      date:'15 May 1770',    cert:'exact',  day:25, lat:48.8625,    lng:2.268,      notes:'Final overnight on the edge of Paris; a violent thunderstorm struck that night', badge:null },
+    { order:11, city:'Versailles', loc:'Palace of Versailles',      date:'16 May 1770',    cert:'exact',  day:26, lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin that same evening', badge:'Wedding Day' },
+];
+
+// Habsburg territory ends at Kehl (index 6)
+const HABSBURG_END = 6;
+
+// ── State ──────────────────────────────────────────────────
+let current = -1;
+let playing  = false;
+let playTimer = null;
+let leafMarkers = [];
+
+// ── Map init ───────────────────────────────────────────────
+const map = L.map('map', { center:[48.4, 9.5], zoom:6, zoomControl:true });
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+// ── Route polylines ────────────────────────────────────────
+const COORDS = STOPS.map(s => [s.lat, s.lng]);
+
+// Ghost (always visible, muted dashed)
+L.polyline(COORDS.slice(0, HABSBURG_END+1), {
+    color:'#8b1111', weight:1.5, opacity:0.15, dashArray:'6 9'
+}).addTo(map);
+L.polyline(COORDS.slice(HABSBURG_END), {
+    color:'#1a3a8b', weight:1.5, opacity:0.15, dashArray:'6 9'
+}).addTo(map);
+
+// Revealed (built up as journey progresses)
+const lineH = L.polyline([], { color:'#9b1111', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
+const lineF = L.polyline([], { color:'#1a3a8b', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
+
+function revealRoute(idx) {
+    if (idx < 0) { lineH.setLatLngs([]); lineF.setLatLngs([]); return; }
+    if (idx <= HABSBURG_END) {
+        lineH.setLatLngs(COORDS.slice(0, idx+1));
+        lineF.setLatLngs([]);
+    } else {
+        lineH.setLatLngs(COORDS.slice(0, HABSBURG_END+1));
+        lineF.setLatLngs(COORDS.slice(HABSBURG_END, idx+1));
+    }
+}
+
+// ── Custom markers ─────────────────────────────────────────
+function mkIcon(stop, state) {
+    const isLast = stop.order === 11;
+    const CFG = {
+        future:  { bg:'#e0d8c8', bd:'#9a8060', tx:'#7a6040', sz:26 },
+        visited: { bg:'#c9a84c', bd:'#7a6010', tx:'#160d04', sz:26 },
+        active:  { bg: isLast ? '#3e006a' : '#8b0000', bd:'#f0d875', tx:'#f0d875', sz:34 },
+    }[state];
+
+    const glow = state==='active'
+        ? `0 0 14px ${isLast?'rgba(62,0,106,0.75)':'rgba(139,0,0,0.7)'}, 0 2px 7px rgba(0,0,0,0.5)`
+        : '0 1px 4px rgba(0,0,0,0.3)';
+
+    return L.divIcon({
+        className:'',
+        html:`<div style="
+            width:${CFG.sz}px;height:${CFG.sz}px;border-radius:50%;
+            background:${CFG.bg};border:2.5px solid ${CFG.bd};color:${CFG.tx};
+            display:flex;align-items:center;justify-content:center;
+            font-size:${CFG.sz===34?13:10}px;font-weight:bold;font-family:Georgia,serif;
+            box-shadow:${glow};cursor:pointer;
+            margin-left:${-CFG.sz/2}px;margin-top:${-CFG.sz/2}px;
+        ">${stop.order}</div>`,
+        iconSize:[CFG.sz, CFG.sz],
+        iconAnchor:[CFG.sz/2, CFG.sz/2]
+    });
+}
+
+function popupHTML(s) {
+    const approx = s.cert==='approx' ? ' <em style="font-size:9px;color:#6a4810">(approx.)</em>' : '';
+    return `<div style="min-width:200px;font-family:Georgia,serif">
+        <div style="border-bottom:1px solid #3e2808;padding-bottom:7px;margin-bottom:7px">
+            <div style="font-size:9px;color:#8a6030;letter-spacing:2px;text-transform:uppercase">Stop ${s.order} of 11 · Day ${s.day}</div>
+            <div style="font-size:17px;color:#f0d875;font-weight:bold;line-height:1.2">${s.city}</div>
+            <div style="font-size:11px;color:#c9a84c;font-style:italic">${s.loc}</div>
+        </div>
+        <div style="font-size:11px;color:#a08040">${s.date}${approx}</div>
+        <div style="font-size:11px;color:#c8a860;margin-top:7px;line-height:1.55;font-style:italic">${s.notes}</div>
+        ${s.badge?`<div style="display:inline-block;background:#7b0000;color:#f0d875;font-size:9px;padding:2px 8px;border-radius:2px;margin-top:7px;letter-spacing:1px;text-transform:uppercase">✦ ${s.badge}</div>`:''}
+    </div>`;
+}
+
+// Create markers
+STOPS.forEach((s, i) => {
+    const m = L.marker([s.lat, s.lng], {
+        icon: mkIcon(s, 'future'),
+        zIndexOffset: i===10 ? 1000 : i
+    }).addTo(map);
+    m.bindPopup(popupHTML(s), { maxWidth:300, className:'ma-popup' });
+    m.on('click', () => { if (!playing) goTo(i); });
+    leafMarkers.push(m);
+});
+
+// ── Sidebar stop list ──────────────────────────────────────
+const listEl = document.getElementById('stop-list');
+STOPS.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'stop-item';
+    el.id = `si-${i}`;
+    el.innerHTML = `
+        <div class="snum">${s.order}</div>
+        <div class="stxt">
+            <div class="scity">${s.city}</div>
+            <div class="sloc">${s.loc}</div>
+            <div class="sdate">${s.date}</div>
+            ${s.badge?`<span class="sbadge">✦ ${s.badge}</span>`:''}
+        </div>
+        <div class="sdayn">Day ${s.day}</div>`;
+    el.onclick = () => goTo(i);
+    listEl.appendChild(el);
+});
+
+// ── Core navigation ────────────────────────────────────────
+function goTo(idx) {
+    current = idx;
+    const s = STOPS[idx];
+
+    // Markers
+    leafMarkers.forEach((m, i) => {
+        const state = i < idx ? 'visited' : i===idx ? 'active' : 'future';
+        m.setIcon(mkIcon(STOPS[i], state));
+        m.setZIndexOffset(i===idx ? 2000 : i===10 ? 1000 : i);
+        if (i !== idx) m.closePopup();
+    });
+
+    // Route lines
+    revealRoute(idx);
+
+    // Sidebar list
+    document.querySelectorAll('.stop-item').forEach((el, i) => {
+        el.classList.toggle('active',  i===idx);
+        el.classList.toggle('visited', i<idx);
+    });
+    document.getElementById(`si-${idx}`).scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+    // Bottom date overlay
+    document.getElementById('ov-city').textContent = s.city;
+    document.getElementById('ov-date').textContent = s.date;
+    document.getElementById('ov-day').textContent  = `Day ${s.day} of the journey`;
+    document.getElementById('date-ov').classList.remove('hidden');
+
+    // Info panel (show during play, or on click)
+    showInfoPanel(s);
+
+    // Fly + popup
+    map.flyTo([s.lat, s.lng], 9, { duration:1.4, easeLinearity:0.5 });
+    setTimeout(() => leafMarkers[idx].openPopup(), 1500);
+
+    // Progress bar + label
+    document.getElementById('prog-fill').style.width = ((idx+1)/STOPS.length*100)+'%';
+    document.getElementById('prog-text').textContent = `Stop ${idx+1} of ${STOPS.length}: ${s.city}`;
+    document.getElementById('btn-prev').disabled = idx <= 0;
+    document.getElementById('btn-next').disabled = idx >= STOPS.length-1;
+}
+
+// ── Info panel ─────────────────────────────────────────────
+function showInfoPanel(s) {
+    document.getElementById('ip-num').textContent   = `Stop ${s.order} of 11 · Day ${s.day}`;
+    document.getElementById('ip-city').textContent  = s.city;
+    document.getElementById('ip-loc').textContent   = s.loc;
+    document.getElementById('ip-date').textContent  = s.date + (s.cert==='approx'?' (approx.)':'');
+    document.getElementById('ip-notes').textContent = s.notes;
+    document.getElementById('ip-badge-wrap').innerHTML = s.badge
+        ? `<div class="ip-badge">✦ ${s.badge}</div>` : '';
+    document.getElementById('info-panel').classList.add('visible');
+}
+
+function closeInfoPanel() {
+    document.getElementById('info-panel').classList.remove('visible');
+}
+
+// ── Playback ───────────────────────────────────────────────
+function prevStop() { if (current > 0) goTo(current-1); }
+function nextStop() { if (current < STOPS.length-1) goTo(current+1); }
+
+function togglePlay() { playing ? pauseJourney() : startJourney(); }
+
+function startJourney() {
+    playing = true;
+    document.getElementById('btn-play').textContent = '⏸ Pause';
+    if (current >= STOPS.length-1) { current = -1; clearVisuals(); }
+
+    function step() {
+        if (!playing) return;
+        const next = current + 1;
+        if (next >= STOPS.length) { pauseJourney(); return; }
+        goTo(next);
+        playTimer = setTimeout(step, 4500);
+    }
+    step();
+}
+
+function pauseJourney() {
+    playing = false;
+    document.getElementById('btn-play').textContent = '▶ Play';
+    clearTimeout(playTimer);
+    playTimer = null;
+}
+
+function clearVisuals() {
+    leafMarkers.forEach((m, i) => {
+        m.setIcon(mkIcon(STOPS[i], 'future'));
+        m.setZIndexOffset(i===10?1000:i);
+        m.closePopup();
+    });
+    revealRoute(-1);
+    document.querySelectorAll('.stop-item').forEach(el => el.classList.remove('active','visited'));
+    document.getElementById('prog-fill').style.width = '0%';
+    document.getElementById('prog-text').textContent = 'Select a stop or press Play';
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+    document.getElementById('date-ov').classList.add('hidden');
+    closeInfoPanel();
+}
+
+function resetJourney() {
+    pauseJourney();
+    current = -1;
+    clearVisuals();
+    showOverview();
+}
+
+function showOverview() {
+    map.flyToBounds(L.latLngBounds(COORDS), { padding:[50,50], duration:1.5 });
+}
+
+// ── Leaflet style overrides ────────────────────────────────
+const style = document.createElement('style');
+style.textContent = `
+    .ma-popup .leaflet-popup-content-wrapper {
+        background:#1c1006 !important;
+        border:1px solid #6b4e12 !important;
+        border-radius:3px !important;
+        color:#e8d5a3 !important;
+        box-shadow:0 4px 24px rgba(0,0,0,0.75);
+    }
+    .ma-popup .leaflet-popup-tip { background:#1c1006 !important; }
+    .ma-popup .leaflet-popup-close-button { color:#c9a84c !important; font-size:16px !important; top:5px !important; right:8px !important; }
+    .leaflet-control-zoom a { background:#1c1006 !important; color:#c9a84c !important; border-color:#4a3508 !important; }
+    .leaflet-control-zoom a:hover { background:#2a1808 !important; }
+    .leaflet-bar { border-color:#4a3508 !important; }
+    .leaflet-control-attribution { background:rgba(16,9,3,0.8) !important; color:#4a3208 !important; font-size:9px; }
+    .leaflet-control-attribution a { color:#6a4810 !important; }
+`;
+document.head.appendChild(style);
+
+// ── Init ───────────────────────────────────────────────────
+showOverview();
+</script>
+</body>
+</html>
