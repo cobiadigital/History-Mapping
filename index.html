@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" />
     <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@latest/leaflet-maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -441,8 +441,8 @@
         <div class="stat"><div class="stat-val">14</div><div class="stat-lbl">Yrs old</div></div>
     </div>
     <div id="legend">
-        <div class="leg"><div class="leg-line" style="background:#9b1111"></div>Habsburg</div>
-        <div class="leg"><div class="leg-line" style="background:#1a3a8b"></div>France</div>
+        <div class="leg"><div class="leg-line" style="background:#e03030"></div>Habsburg</div>
+        <div class="leg"><div class="leg-line" style="background:#3a6ad8"></div>France</div>
         <div class="leg"><div class="leg-dash"></div>Ahead</div>
         <div class="leg"><div class="leg-line" style="background:#5ab4d4;opacity:0.75"></div>Rivers</div>
         <div class="leg"><div class="leg-line" style="background:#e8a838;opacity:0.8"></div>OHM</div>
@@ -578,19 +578,23 @@ function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
 // ── Map init ───────────────────────────────────────────────
 const map = L.map('map', { center:[48.4, 9.5], zoom:6, zoomControl:true });
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains:'abcd', maxZoom:19
-}).addTo(map);
+L.tileLayer(
+    'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png',
+    {
+        attribution: 'Imagery: <a href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> · VIIRS Black Marble',
+        maxNativeZoom: 8,
+        maxZoom: 18,
+    }
+).addTo(map);
 
 // ── Route polylines ────────────────────────────────────────
 const COORDS = STOPS.map(s => [s.lat, s.lng]);
 
-L.polyline(COORDS.slice(0, HABSBURG_END+1), { color:'#8b1111', weight:1.5, opacity:0.15, dashArray:'6 9' }).addTo(map);
-L.polyline(COORDS.slice(HABSBURG_END),      { color:'#1a3a8b', weight:1.5, opacity:0.15, dashArray:'6 9' }).addTo(map);
+L.polyline(COORDS.slice(0, HABSBURG_END+1), { color:'#c23030', weight:1.5, opacity:0.30, dashArray:'6 9' }).addTo(map);
+L.polyline(COORDS.slice(HABSBURG_END),      { color:'#3a6ad8', weight:1.5, opacity:0.30, dashArray:'6 9' }).addTo(map);
 
-const lineH = L.polyline([], { color:'#9b1111', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
-const lineF = L.polyline([], { color:'#1a3a8b', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
+const lineH = L.polyline([], { color:'#e03030', weight:3.5, opacity:0.92, lineCap:'round', lineJoin:'round' }).addTo(map);
+const lineF = L.polyline([], { color:'#3a6ad8', weight:3.5, opacity:0.92, lineCap:'round', lineJoin:'round' }).addTo(map);
 
 function revealRoute(idx) {
     if (idx < 0) { lineH.setLatLngs([]); lineF.setLatLngs([]); return; }
@@ -1002,7 +1006,18 @@ async function applyDateFilter() {
     }
 }
 
+function setOhmBtnLabel(txt) {
+    document.getElementById('btn-ohm') && (document.getElementById('btn-ohm').textContent = txt);
+    document.getElementById('mb-ohm')  && (document.getElementById('mb-ohm').textContent  = txt === '⌛ OHM History' ? 'OHM' : txt.slice(0,8));
+}
+
 async function toggleOHM() {
+    if (typeof L.maplibreGL !== 'function') {
+        console.error('[OHM] maplibre-gl-leaflet not loaded — check CDN script tag');
+        alert('OpenHistoricalMap requires the MapLibre GL plugin to load. Please check your network connection and refresh.');
+        return;
+    }
+
     ohmOn = !ohmOn;
 
     document.getElementById('btn-ohm')?.classList.toggle('layer-on', ohmOn);
@@ -1012,31 +1027,40 @@ async function toggleOHM() {
 
     if (ohmOn) {
         if (!ohmLayer) {
+            setOhmBtnLabel('⏳ Loading…');
             try {
+                // Create a custom pane below overlayPane (z 350) so routes/markers stay on top
+                if (!map.getPane('ohmPane')) {
+                    map.createPane('ohmPane');
+                    map.getPane('ohmPane').style.zIndex = 350;
+                    map.getPane('ohmPane').style.pointerEvents = 'none';
+                }
+
                 ohmLayer = L.maplibreGL({
                     style: OHM_STYLE,
+                    pane: 'ohmPane',
                     attribution: '© <a href="https://www.openhistoricalmap.org/">OpenHistoricalMap</a> contributors',
                 }).addTo(map);
 
-                // Poll until the MapLibre GL internal map is ready (up to 10 s)
+                // _glMap is set synchronously in onAdd; wait briefly for the
+                // MapLibre GL constructor to finish if needed (up to 5 s)
                 await new Promise((resolve, reject) => {
                     let n = 0;
                     const t = setInterval(() => {
                         const m = getMLMap();
                         if (m) { clearInterval(t); mlMap = m; resolve(); }
-                        else if (++n > 100) { clearInterval(t); reject(new Error('ML init timeout')); }
+                        else if (++n > 50) { clearInterval(t); reject(new Error('ML init timeout')); }
                     }, 100);
                 });
 
                 await applyDateFilter();
-
-                // Slight transparency so rivers / routes remain legible above OHM
-                const container = ohmLayer._container ?? ohmLayer.getContainer?.();
-                if (container) container.style.opacity = '0.88';
+                setOhmBtnLabel('⌛ OHM History');
 
             } catch (e) {
                 console.error('[OHM] Init failed:', e.message);
                 ohmOn = false;
+                ohmLayer = null;
+                setOhmBtnLabel('⌛ OHM History');
                 document.getElementById('btn-ohm')?.classList.remove('layer-on');
                 document.getElementById('mb-ohm')?.classList.remove('layer-on');
                 document.getElementById('ohm-ctrl')?.classList.add('hidden');
