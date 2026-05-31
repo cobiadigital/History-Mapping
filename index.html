@@ -6,9 +6,9 @@
     <title>Marie Antoinette's Journey · Vienna to Versailles, 1770</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" />
-    <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" />
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -470,7 +470,7 @@
             <button id="btn-ohm" onclick="toggleOHM()" title="OpenHistoricalMap — historical features with date filter">⌛ OHM History</button>
         </div>
         <div id="ohm-ctrl" class="ohm-ctrl hidden">
-            <div class="ohm-yr-label">Year: <strong id="ohm-yr-val">1770</strong></div>
+            <div class="ohm-yr-label">Filter by year: <strong id="ohm-yr-val">—</strong></div>
             <input type="range" id="ohm-slider" min="1000" max="1900" value="1770" step="10"
                    class="ohm-slider" oninput="updateOhmDate(this.value)">
         </div>
@@ -1078,21 +1078,15 @@ async function toggleOHM() {
         if (!ohmLayer) {
             setOhmBtnLabel('⏳ Loading…');
             try {
-                // Create a custom pane below overlayPane (z 350) so routes/markers stay on top
-                if (!map.getPane('ohmPane')) {
-                    map.createPane('ohmPane');
-                    map.getPane('ohmPane').style.zIndex = 350;
-                    map.getPane('ohmPane').style.pointerEvents = 'none';
-                }
-
+                // No custom pane — use the default overlayPane (z 400).
+                // A custom pane with createPane() initialises to 0×0 which
+                // prevents the WebGL canvas from rendering at all.
                 ohmLayer = L.maplibreGL({
                     style: OHM_STYLE,
-                    pane: 'ohmPane',
                     attribution: '© <a href="https://www.openhistoricalmap.org/">OpenHistoricalMap</a> contributors',
                 }).addTo(map);
 
-                // _glMap is set synchronously in onAdd; wait briefly for the
-                // MapLibre GL constructor to finish if needed (up to 5 s)
+                // Wait up to 5 s for the MapLibre GL Map instance to be ready
                 await new Promise((resolve, reject) => {
                     let n = 0;
                     const t = setInterval(() => {
@@ -1102,7 +1096,9 @@ async function toggleOHM() {
                     }, 100);
                 });
 
-                await applyDateFilter();
+                // Don't apply a date filter on initial load — show all OHM
+                // features first so the layer is visibly working. The slider
+                // applies the filter when the user drags it.
                 setOhmBtnLabel('⌛ OHM History');
 
             } catch (e) {
