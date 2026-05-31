@@ -123,6 +123,11 @@
             margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase;
         }
 
+        .stop-item.stop-minor { opacity: 0.68; }
+        .stop-item.stop-minor .snum { width: 18px; height: 18px; font-size: 8px; }
+        .stop-item.stop-minor .scity { font-size: 12px; }
+        .stype-sym { font-size: 9px; color: #9a7030; margin-left: 4px; }
+
         /* Desktop controls */
         #controls {
             padding: 12px 14px;
@@ -435,7 +440,7 @@
         <div class="journey-sub">Vienna → Versailles · April – May 1770</div>
     </div>
     <div id="stats">
-        <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">Stops</div></div>
+        <div class="stat"><div class="stat-val">32</div><div class="stat-lbl">Stops</div></div>
         <div class="stat"><div class="stat-val">26</div><div class="stat-lbl">Days</div></div>
         <div class="stat"><div class="stat-val">~1,800</div><div class="stat-lbl">km</div></div>
         <div class="stat"><div class="stat-val">14</div><div class="stat-lbl">Yrs old</div></div>
@@ -524,11 +529,11 @@
     <div id="m-sheet">
         <div class="ms-handle"></div>
         <div class="ms-head">
-            <span>The Journey · 11 Stops</span>
+            <span>The Journey · 32 Stops</span>
             <button class="ms-close" onclick="closeSheet()">✕</button>
         </div>
         <div class="ms-stats">
-            <div class="ms-stat"><span class="ms-sv">11</span><span class="ms-sl">Stops</span></div>
+            <div class="ms-stat"><span class="ms-sv">32</span><span class="ms-sl">Stops</span></div>
             <div class="ms-stat"><span class="ms-sv">26</span><span class="ms-sl">Days</span></div>
             <div class="ms-stat"><span class="ms-sv">~1,800</span><span class="ms-sl">km</span></div>
             <div class="ms-stat"><span class="ms-sv">14</span><span class="ms-sl">Yrs old</span></div>
@@ -550,20 +555,44 @@
 <script>
 // ── Data ───────────────────────────────────────────────────
 const STOPS = [
-    { order:1,  city:'Vienna',     loc:'Schönbrunn Palace',         date:'21 Apr 1770',    cert:'exact',  day:1,  lat:48.1858124, lng:16.3127641, notes:'Departure; procession of ~57 carriages and 450 horses', badge:null },
-    { order:2,  city:'Melk',       loc:'Melk Abbey',                date:'21–22 Apr 1770', cert:'approx', day:2,  lat:48.2282795, lng:15.3312091, notes:'First overnight stop; met by brother Joseph II', badge:null },
-    { order:3,  city:'Lambach',    loc:'Lambach Abbey',             date:'23 Apr 1770',    cert:'approx', day:3,  lat:48.0912808, lng:13.8754787, notes:'Rococo theatre performance on the River Traun', badge:null },
-    { order:4,  city:'Munich',     loc:'Nymphenburg / Amalienburg', date:'24–25 Apr 1770', cert:'approx', day:5,  lat:48.1582675, lng:11.5033143, notes:'Entered Bavaria; granted a day of rest', badge:null },
-    { order:5,  city:'Günzburg',   loc:'Swabia',                    date:'27–28 Apr 1770', cert:'approx', day:8,  lat:48.4528412, lng:10.2775127, notes:'Broke journey ~2 days; joined by aunt Anne Charlotte of Lorraine', badge:null },
-    { order:6,  city:'Freiburg',   loc:'Freiburg im Breisgau',      date:'4–5 May 1770',   cert:'approx', day:15, lat:47.9990077, lng:7.8421043,  notes:'Among last stops on Habsburg-controlled soil', badge:null },
-    { order:7,  city:'Kehl',       loc:'Rhine Island',              date:'7 May 1770',     cert:'exact',  day:17, lat:48.5788725, lng:7.8160821,  notes:'The remise: stripped of all things Austrian and re-dressed as French on an island in the Rhine', badge:'The Remise' },
-    { order:8,  city:'Strasbourg', loc:'Strasbourg Cathedral',      date:'7–8 May 1770',   cert:'approx', day:18, lat:48.5818799, lng:7.7510348,  notes:'First French city; Thanksgiving Mass and illuminations', badge:null },
-    { order:9,  city:'Compiègne',  loc:'Château de Compiègne',      date:'14 May 1770',    cert:'exact',  day:24, lat:49.4192921, lng:2.8311798,  notes:'First meeting with Louis XV and the Dauphin', badge:'Meets the Dauphin' },
-    { order:10, city:'Paris',      loc:'Château de la Muette',      date:'15 May 1770',    cert:'exact',  day:25, lat:48.8625,    lng:2.268,      notes:'Final overnight on the edge of Paris; a violent thunderstorm struck that night', badge:null },
-    { order:11, city:'Versailles', loc:'Palace of Versailles',      date:'16 May 1770',    cert:'exact',  day:26, lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin that same evening', badge:'Wedding Day' },
+    // ── Austria ─────────────────────────────────────────────
+    { order:1,  city:'Vienna',          loc:'Schönbrunn Palace',                 date:'21 Apr 1770',      cert:'exact',  day:1,  type:'departure',     lat:48.1858124, lng:16.3127641, notes:'Departure ~9:30am; procession of ~57 carriages, 235 persons, ~350 horses', badge:null },
+    { order:2,  city:'St Pölten',       loc:'St Pölten',                         date:'21 Apr 1770',      cert:'approx', day:1,  type:'pass-through',  lat:48.2046985, lng:15.6256711, notes:'Passed through on day 1 en route to Melk', badge:null },
+    { order:3,  city:'Melk',            loc:'Melk Abbey',                        date:'21–22 Apr 1770',   cert:'exact',  day:1,  type:'overnight',     lat:48.2282795, lng:15.3312091, notes:'Night 1; met by brother Joseph II; convent pupils performed an opera', badge:null },
+    { order:4,  city:'Amstetten',       loc:'Amstetten',                         date:'22 Apr 1770',      cert:'approx', day:2,  type:'pass-through',  lat:48.1229000, lng:14.8720000, notes:'Passed via Kemmelbach and Amstetten toward Enns', badge:null },
+    { order:5,  city:'Strengberg',      loc:'Strengberg',                        date:'22 Apr 1770',      cert:'approx', day:2,  type:'pass-through',  lat:48.1500000, lng:14.6333000, notes:'Pass-through on the road to Enns', badge:null },
+    { order:6,  city:'Enns',            loc:'Schloss Ennsegg',                   date:'22–23 Apr 1770',   cert:'exact',  day:2,  type:'overnight',     lat:48.2150378, lng:14.4814837, notes:'Night 2 at the castle', badge:null },
+    { order:7,  city:'Wels',            loc:'Wels',                              date:'23 Apr 1770',      cert:'approx', day:3,  type:'pass-through',  lat:48.1575000, lng:14.0289000, notes:'Passed via Kleinmünchen and Wels toward Lambach', badge:null },
+    { order:8,  city:'Lambach',         loc:'Lambach Abbey',                     date:'23–24 Apr 1770',   cert:'exact',  day:3,  type:'overnight',     lat:48.0912808, lng:13.8754787, notes:'Night 3; Rococo abbey theatre on the River Traun', badge:null },
+    { order:9,  city:'Ried im Innkreis',loc:'Ried',                              date:'24 Apr 1770',      cert:'approx', day:4,  type:'pass-through',  lat:48.2103000, lng:13.4894000, notes:'Passed via Haag and Ried', badge:null },
+    { order:10, city:'Braunau am Inn',  loc:'Braunau am Inn',                    date:'24–25 Apr 1770',   cert:'approx', day:4,  type:'overnight',     lat:48.2585000, lng:13.0356000, notes:'Night 4; crossing point toward Bavaria on the River Inn', badge:null },
+    // ── Bavaria / Germany ────────────────────────────────────
+    { order:11, city:'Altötting',       loc:'Altötting',                         date:'25–26 Apr 1770',   cert:'approx', day:5,  type:'overnight',     lat:48.2236975, lng:12.6799462, notes:'Night 5; major Marian pilgrimage site', badge:null },
+    { order:12, city:'Munich',          loc:'Nymphenburg Palace / Amalienburg',  date:'26–27 Apr 1770',   cert:'exact',  day:6,  type:'overnight',     lat:48.1582675, lng:11.5033143, notes:'Arrived 26 Apr; entertained by Elector Maximilian III Joseph; full rest day in the Amalienburg pavilion', badge:null },
+    { order:13, city:'Augsburg',        loc:'Schaezlerpalais',                   date:'28–29 Apr 1770',   cert:'exact',  day:8,  type:'overnight',     lat:48.3650195, lng:10.8993149, notes:'Ball in the Schaezlerpalais rococo ballroom; made honorary member of the Academy of Sciences and Fine Arts', badge:null },
+    { order:14, city:'Günzburg',        loc:'Günzburg',                          date:'29–30 Apr 1770',   cert:'exact',  day:9,  type:'overnight',     lat:48.4528412, lng:10.2775127, notes:'Two-day stop; reunited with aunt Princess Charlotte of Lorraine', badge:null },
+    { order:15, city:'Königinbild',     loc:'Maria Königinbild pilgrimage church',date:'30 Apr 1770',     cert:'approx', day:10, type:'excursion',     lat:48.3700000, lng:10.3300000, notes:'Pilgrimage excursion with her aunt during the Günzburg rest day; she gave a silver eternal lamp', badge:null },
+    { order:16, city:'Ulm',             loc:'Ulm',                               date:'1 May 1770',       cert:'approx', day:11, type:'pass-through',  lat:48.4010822, lng:9.9876076,  notes:'Passed through after Günzburg via Ehingen', badge:null },
+    { order:17, city:'Obermarchtal',    loc:'Obermarchtal Abbey',                date:'1–2 May 1770',     cert:'exact',  day:11, type:'overnight',     lat:48.2362413, lng:9.5705992,  notes:'Night of 1–2 May at the abbey', badge:null },
+    { order:18, city:'Riedlingen',      loc:'Riedlingen',                        date:'2 May 1770',       cert:'approx', day:12, type:'pass-through',  lat:48.1596486, lng:9.4713346,  notes:"On the Danube in Upper Swabia; a bypass 'Dauphinéstrasse' was specially built for the procession", badge:null },
+    { order:19, city:'Mengen',          loc:'Mengen',                            date:'2 May 1770',       cert:'approx', day:12, type:'pass-through',  lat:48.0494000, lng:9.3306000,  notes:'Passed via Mengen', badge:null },
+    { order:20, city:'Meßkirch',        loc:'Meßkirch',                          date:'2 May 1770',       cert:'approx', day:12, type:'pass-through',  lat:47.9944211, lng:9.1156399,  notes:'Passed via Meßkirch toward Stockach', badge:null },
+    { order:21, city:'Stockach',        loc:"Inn 'Weißes Kreuz' (White Cross)",  date:'2–3 May 1770',     cert:'exact',  day:12, type:'overnight',     lat:47.8531635, lng:9.0091528,  notes:'Overnight at the White Cross inn', badge:null },
+    { order:22, city:'Engen',           loc:'Engen',                             date:'3 May 1770',       cert:'approx', day:13, type:'pass-through',  lat:47.8556000, lng:8.7722000,  notes:'Passed via Nenzingen, Eigeltingen, Aach, Engen', badge:null },
+    { order:23, city:'Geisingen',       loc:'Geisingen',                         date:'3 May 1770',       cert:'approx', day:13, type:'pass-through',  lat:47.9211000, lng:8.6500000,  notes:'Pass-through toward Donaueschingen', badge:null },
+    { order:24, city:'Donaueschingen',  loc:'Schloss Donaueschingen',            date:'3–4 May 1770',     cert:'exact',  day:13, type:'overnight',     lat:47.9520238, lng:8.5031033,  notes:'Night at the schloss; welcomed by Prince Joseph Wenzel; local roads hastily repaired for her arrival', badge:null },
+    { order:25, city:'Hofgut Sternen',  loc:'Hofgut Sternen / Höllental gorge', date:'4 May 1770',       cert:'exact',  day:14, type:'excursion',     lat:47.9166074, lng:8.0734860,  notes:"Stop at the old Black Forest guesthouse; descent through the dramatic Höllental ('Hell Valley')", badge:null },
+    { order:26, city:'Freiburg',        loc:'Kageneckschen Haus, Salzstraße',   date:'4–5 May 1770',     cert:'exact',  day:14, type:'overnight',     lat:47.9990077, lng:7.8421043,  notes:"Two-day stop; entry route long called 'Dauphinéstrasse'; last major German city", badge:null },
+    { order:27, city:'Schuttern',       loc:'Schuttern Abbey',                   date:'6–7 May 1770',     cert:'exact',  day:16, type:'overnight',     lat:48.3816782, lng:7.8528796,  notes:'Last night on German soil / within the Holy Roman Empire; illuminations and cannon salute', badge:null },
+    // ── Rhine border / France ────────────────────────────────
+    { order:28, city:'Kehl',            loc:'Rhine island (Kommissionsinsel)',   date:'7 May 1770',       cert:'exact',  day:17, type:'ceremony',      lat:48.5788725, lng:7.8160821,  notes:'The remise: stripped of all Austrian attire and attendants in a three-part wooden pavilion; became Dauphine of France', badge:'The Remise' },
+    { order:29, city:'Strasbourg',      loc:'Strasbourg Cathedral',              date:'7–8 May 1770',     cert:'exact',  day:17, type:'overnight',     lat:48.5818799, lng:7.7510348,  notes:'First French city; illuminations, flowers, Thanksgiving Mass; greeted by Prince Louis de Rohan', badge:null },
+    { order:30, city:'Compiègne',       loc:'Château de Compiègne',              date:'13–14 May 1770',   cert:'approx', day:24, type:'ceremony',      lat:49.4192921, lng:2.8311798,  notes:'First meeting with King Louis XV and the Dauphin Louis-Auguste (sources vary 13–14 May)', badge:'Meets the Dauphin' },
+    { order:31, city:'Paris',           loc:'Château de la Muette',              date:'15 May 1770',      cert:'exact',  day:25, type:'overnight',     lat:48.8625000, lng:2.2680000,  notes:'Final overnight on the edge of Paris; a violent thunderstorm struck that night', badge:null },
+    { order:32, city:'Versailles',      loc:'Palace of Versailles',              date:'16 May 1770',      cert:'exact',  day:26, type:'arrival',       lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin in the Royal Chapel that day. She was 14; he was 15', badge:'Wedding Day' },
 ];
 
-const HABSBURG_END = 6;
+const HABSBURG_END = 27; // index of Kehl — Habsburg leg ends here, French leg begins
 
 // ── State ──────────────────────────────────────────────────
 let current     = -1;
@@ -609,14 +638,19 @@ function revealRoute(idx) {
 
 // ── Markers ────────────────────────────────────────────────
 function mkIcon(stop, state) {
-    const isLast = stop.order === 11;
+    const isLast    = stop.order === STOPS.length;
+    const isMinor   = stop.type === 'pass-through' || stop.type === 'excursion';
+    const isFrench  = stop.order > HABSBURG_END + 1; // Strasbourg onwards
+    const baseSize  = isMinor ? 18 : 26;
+    const activeBg  = isLast ? '#3e006a' : (isFrench ? '#1a3a8b' : '#8b0000');
+    const activeGlw = isLast ? 'rgba(62,0,106,0.75)' : (isFrench ? 'rgba(26,58,139,0.7)' : 'rgba(139,0,0,0.7)');
     const CFG = {
-        future:  { bg:'#e0d8c8', bd:'#9a8060', tx:'#7a6040', sz:26 },
-        visited: { bg:'#c9a84c', bd:'#7a6010', tx:'#160d04', sz:26 },
-        active:  { bg: isLast ? '#3e006a' : '#8b0000', bd:'#f0d875', tx:'#f0d875', sz:34 },
+        future:  { bg:'#e0d8c8', bd:'#9a8060', tx:'#7a6040', sz: baseSize },
+        visited: { bg:'#c9a84c', bd:'#7a6010', tx:'#160d04', sz: baseSize },
+        active:  { bg: activeBg, bd:'#f0d875', tx:'#f0d875', sz:34 },
     }[state];
     const glow = state==='active'
-        ? `0 0 14px ${isLast?'rgba(62,0,106,0.75)':'rgba(139,0,0,0.7)'}, 0 2px 7px rgba(0,0,0,0.5)`
+        ? `0 0 14px ${activeGlw}, 0 2px 7px rgba(0,0,0,0.5)`
         : '0 1px 4px rgba(0,0,0,0.3)';
     return L.divIcon({
         className:'',
@@ -624,7 +658,7 @@ function mkIcon(stop, state) {
             width:${CFG.sz}px;height:${CFG.sz}px;border-radius:50%;
             background:${CFG.bg};border:2.5px solid ${CFG.bd};color:${CFG.tx};
             display:flex;align-items:center;justify-content:center;
-            font-size:${CFG.sz===34?13:10}px;font-weight:bold;font-family:Georgia,serif;
+            font-size:${CFG.sz===34?13:CFG.sz<=18?8:10}px;font-weight:bold;font-family:Georgia,serif;
             box-shadow:${glow};cursor:pointer;
             margin-left:${-CFG.sz/2}px;margin-top:${-CFG.sz/2}px;
         ">${stop.order}</div>`,
@@ -632,11 +666,14 @@ function mkIcon(stop, state) {
     });
 }
 
+const TYPE_LABEL = { 'departure':'Departure', 'pass-through':'Pass-through', 'overnight':'Overnight', 'excursion':'Excursion', 'ceremony':'Ceremony', 'arrival':'Arrival' };
+
 function popupHTML(s) {
     const approx = s.cert==='approx' ? ' <em style="font-size:9px;color:#6a4810">(approx.)</em>' : '';
+    const typeStr = TYPE_LABEL[s.type] ? ` · ${TYPE_LABEL[s.type]}` : '';
     return `<div style="min-width:200px;font-family:Georgia,serif">
         <div style="border-bottom:1px solid #3e2808;padding-bottom:7px;margin-bottom:7px">
-            <div style="font-size:9px;color:#8a6030;letter-spacing:2px;text-transform:uppercase">Stop ${s.order} of 11 · Day ${s.day}</div>
+            <div style="font-size:9px;color:#8a6030;letter-spacing:2px;text-transform:uppercase">Stop ${s.order} of ${STOPS.length} · Day ${s.day}${typeStr}</div>
             <div style="font-size:17px;color:#f0d875;font-weight:bold;line-height:1.2">${s.city}</div>
             <div style="font-size:11px;color:#c9a84c;font-style:italic">${s.loc}</div>
         </div>
@@ -647,9 +684,10 @@ function popupHTML(s) {
 }
 
 STOPS.forEach((s, i) => {
+    const isMinor = s.type === 'pass-through' || s.type === 'excursion';
     const m = L.marker([s.lat, s.lng], {
         icon: mkIcon(s, 'future'),
-        zIndexOffset: i===10 ? 1000 : i
+        zIndexOffset: i===STOPS.length-1 ? 1000 : isMinor ? 0 : 10 + i
     }).addTo(map);
     m.bindPopup(popupHTML(s), { maxWidth:300, className:'ma-popup' });
     m.on('click', () => {
@@ -664,12 +702,14 @@ STOPS.forEach((s, i) => {
 // ── Stop lists (desktop sidebar + mobile sheet) ────────────
 function buildStopItem(s, i, idPrefix) {
     const el = document.createElement('div');
-    el.className = 'stop-item';
+    const isMinor = s.type === 'pass-through' || s.type === 'excursion';
+    el.className = `stop-item${isMinor ? ' stop-minor' : ''}`;
     el.id = `${idPrefix}${i}`;
+    const typeIcon = { 'ceremony':'⚜', 'departure':'↗', 'arrival':'★', 'excursion':'↻' }[s.type] || '';
     el.innerHTML = `
         <div class="snum">${s.order}</div>
         <div class="stxt">
-            <div class="scity">${s.city}</div>
+            <div class="scity">${s.city}${typeIcon ? `<span class="stype-sym">${typeIcon}</span>` : ''}</div>
             <div class="sloc">${s.loc}</div>
             <div class="sdate">${s.date}</div>
             ${s.badge?`<span class="sbadge">✦ ${s.badge}</span>`:''}
@@ -694,7 +734,7 @@ function goTo(idx) {
     // Markers
     leafMarkers.forEach((m, i) => {
         m.setIcon(mkIcon(STOPS[i], i < idx ? 'visited' : i===idx ? 'active' : 'future'));
-        m.setZIndexOffset(i===idx ? 2000 : i===10 ? 1000 : i);
+        m.setZIndexOffset(i===idx ? 2000 : i===STOPS.length-1 ? 1000 : i);
         if (i !== idx) m.closePopup();
     });
 
@@ -741,7 +781,7 @@ function goTo(idx) {
 
 // ── Desktop info panel ─────────────────────────────────────
 function showInfoPanel(s) {
-    document.getElementById('ip-num').textContent   = `Stop ${s.order} of 11 · Day ${s.day}`;
+    document.getElementById('ip-num').textContent   = `Stop ${s.order} of ${STOPS.length} · Day ${s.day}`;
     document.getElementById('ip-city').textContent  = s.city;
     document.getElementById('ip-loc').textContent   = s.loc;
     document.getElementById('ip-date').textContent  = s.date + (s.cert==='approx'?' (approx.)':'');
@@ -755,7 +795,7 @@ function closeInfoPanel() { document.getElementById('info-panel').classList.remo
 // ── Mobile helpers ─────────────────────────────────────────
 function updateMobileCard(s) {
     const approx = s.cert==='approx' ? ' (approx.)' : '';
-    document.getElementById('mc-num').textContent   = `Stop ${s.order} of 11 · Day ${s.day}`;
+    document.getElementById('mc-num').textContent   = `Stop ${s.order} of ${STOPS.length} · Day ${s.day}`;
     document.getElementById('mc-city').textContent  = s.city;
     document.getElementById('mc-loc').textContent   = s.loc;
     document.getElementById('mc-date').textContent  = s.date + approx;
