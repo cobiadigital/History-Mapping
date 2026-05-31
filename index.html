@@ -440,7 +440,7 @@
         <div class="journey-sub">Vienna → Versailles · April – May 1770</div>
     </div>
     <div id="stats">
-        <div class="stat"><div class="stat-val">32</div><div class="stat-lbl">Stops</div></div>
+        <div class="stat"><div class="stat-val">41</div><div class="stat-lbl">Stops</div></div>
         <div class="stat"><div class="stat-val">26</div><div class="stat-lbl">Days</div></div>
         <div class="stat"><div class="stat-val">~1,800</div><div class="stat-lbl">km</div></div>
         <div class="stat"><div class="stat-val">14</div><div class="stat-lbl">Yrs old</div></div>
@@ -529,11 +529,11 @@
     <div id="m-sheet">
         <div class="ms-handle"></div>
         <div class="ms-head">
-            <span>The Journey · 32 Stops</span>
+            <span>The Journey · 41 Stops</span>
             <button class="ms-close" onclick="closeSheet()">✕</button>
         </div>
         <div class="ms-stats">
-            <div class="ms-stat"><span class="ms-sv">32</span><span class="ms-sl">Stops</span></div>
+            <div class="ms-stat"><span class="ms-sv">41</span><span class="ms-sl">Stops</span></div>
             <div class="ms-stat"><span class="ms-sv">26</span><span class="ms-sl">Days</span></div>
             <div class="ms-stat"><span class="ms-sv">~1,800</span><span class="ms-sl">km</span></div>
             <div class="ms-stat"><span class="ms-sv">14</span><span class="ms-sl">Yrs old</span></div>
@@ -587,9 +587,18 @@ const STOPS = [
     // ── Rhine border / France ────────────────────────────────
     { order:28, city:'Kehl',            loc:'Rhine island (Kommissionsinsel)',   date:'7 May 1770',       cert:'exact',  day:17, type:'ceremony',      lat:48.5788725, lng:7.8160821,  notes:'The remise: stripped of all Austrian attire and attendants in a three-part wooden pavilion; became Dauphine of France', badge:'The Remise' },
     { order:29, city:'Strasbourg',      loc:'Strasbourg Cathedral',              date:'7–8 May 1770',     cert:'exact',  day:17, type:'overnight',     lat:48.5818799, lng:7.7510348,  notes:'First French city; illuminations, flowers, Thanksgiving Mass; greeted by Prince Louis de Rohan', badge:null },
-    { order:30, city:'Compiègne',       loc:'Château de Compiègne',              date:'13–14 May 1770',   cert:'approx', day:24, type:'ceremony',      lat:49.4192921, lng:2.8311798,  notes:'First meeting with King Louis XV and the Dauphin Louis-Auguste (sources vary 13–14 May)', badge:'Meets the Dauphin' },
-    { order:31, city:'Paris',           loc:'Château de la Muette',              date:'15 May 1770',      cert:'exact',  day:25, type:'overnight',     lat:48.8625000, lng:2.2680000,  notes:'Final overnight on the edge of Paris; a violent thunderstorm struck that night', badge:null },
-    { order:32, city:'Versailles',      loc:'Palace of Versailles',              date:'16 May 1770',      cert:'exact',  day:26, type:'arrival',       lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin in the Royal Chapel that day. She was 14; he was 15', badge:'Wedding Day' },
+    { order:30, city:'Saverne',           loc:'Château des Rohan',                  date:'8–9 May 1770',    cert:'exact',  day:18, type:'overnight',     lat:48.7420391, lng:7.3637590,  notes:'First French stage; her first sight of a French princely residence, recently embellished', badge:null },
+    { order:31, city:'Lunéville',         loc:'Château de Lunéville',               date:'8 May 1770',      cert:'approx', day:18, type:'pass-through',  lat:48.5946917, lng:6.4920164,  notes:"Received military honours (gendarmerie, marquis de Castries); on the road from Saverne toward Nancy", badge:null },
+    { order:32, city:'Nancy',             loc:'Église des Cordeliers / Pavillon Alliot', date:'9–10 May 1770', cert:'exact', day:19, type:'overnight',  lat:48.6976330, lng:6.1790269,  notes:'Arrived at nightfall; prayed at the tombs of her paternal Lorraine ancestors; ancestral capital of her House', badge:null },
+    { order:33, city:'Toul',              loc:'Toul',                               date:'10 May 1770',     cert:'approx', day:20, type:'pass-through',  lat:48.6782960, lng:5.8901590,  notes:'Passed through west of Nancy toward Commercy', badge:null },
+    { order:34, city:'Commercy',          loc:'Commercy',                           date:'10 May 1770',     cert:'approx', day:20, type:'pass-through',  lat:48.7631660, lng:5.5913769,  notes:'A ten-year-old girl presented her with flowers and a compliment', badge:null },
+    { order:35, city:'Bar-le-Duc',        loc:'Bar-le-Duc',                         date:'10–11 May 1770',  cert:'exact',  day:20, type:'overnight',     lat:48.7748253, lng:5.1599327,  notes:"Overnight ('couchait à Bar'); former capital of the Duchy of Bar", badge:null },
+    { order:36, city:'Châlons-sur-Marne', loc:"Hôtel de l'Intendance",              date:'11–12 May 1770',  cert:'exact',  day:21, type:'overnight',     lat:48.9566820, lng:4.3630730,  notes:"Theatre performance of 'La Partie de chasse de Henri IV'; fireworks and illuminations", badge:null },
+    { order:37, city:'Reims',             loc:'Reims (Cathedral city)',              date:'12 May 1770',     cert:'exact',  day:22, type:'pass-through',  lat:49.2538280, lng:4.0340474,  notes:'Passed through the coronation city on 12 May', badge:null },
+    { order:38, city:'Soissons',          loc:'Soissons',                            date:'12–13 May 1770',  cert:'exact',  day:22, type:'overnight',     lat:49.3770386, lng:3.3286377,  notes:"48-hour stay (12–14 May); greeted by the duc d'Aumont on behalf of the King", badge:null },
+    { order:39, city:'Compiègne',         loc:'Château de Compiègne',               date:'14 May 1770',     cert:'exact',  day:24, type:'ceremony',      lat:49.4192921, lng:2.8311798,  notes:'First meeting with King Louis XV and the Dauphin Louis-Auguste in the forest', badge:'Meets the Dauphin' },
+    { order:40, city:'Paris',             loc:'Château de la Muette',               date:'15 May 1770',     cert:'exact',  day:25, type:'overnight',     lat:48.8625000, lng:2.2680000,  notes:'Final overnight on the edge of Paris; thunderstorm that night', badge:null },
+    { order:41, city:'Versailles',        loc:'Palace of Versailles',               date:'16 May 1770',     cert:'exact',  day:26, type:'arrival',       lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin in the Royal Chapel that day. She was 14; he was 15', badge:'Wedding Day' },
 ];
 
 const HABSBURG_END = 27; // index of Kehl — Habsburg leg ends here, French leg begins
