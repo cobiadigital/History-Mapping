@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Marie Antoinette's Journey · Vienna to Versailles, 1770</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" />
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,11 +16,12 @@
             font-family: 'Georgia', 'Times New Roman', serif;
             background: #1a0f07;
             height: 100vh;
+            height: 100dvh;
             display: flex;
             overflow: hidden;
         }
 
-        /* ── SIDEBAR ─────────────────────────────────────────── */
+        /* ── DESKTOP SIDEBAR ─────────────────────────────────── */
         #sidebar {
             width: 340px;
             flex-shrink: 0;
@@ -56,11 +60,7 @@
             background: #160d05;
         }
 
-        .stat {
-            text-align: center;
-            padding: 9px 4px;
-            border-right: 1px solid #251808;
-        }
+        .stat { text-align: center; padding: 9px 4px; border-right: 1px solid #251808; }
         .stat:last-child { border-right: none; }
         .stat-val { font-size: 17px; color: #c9a84c; font-weight: bold; line-height: 1; }
         .stat-lbl { font-size: 8px; color: #5a3e10; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
@@ -77,17 +77,15 @@
         }
         .leg { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #7a5820; }
         .leg-line { width: 22px; height: 3px; border-radius: 2px; }
-        .leg-dash {
-            width: 22px; height: 0;
-            border-top: 2px dashed #4a3508;
-        }
+        .leg-dash { width: 22px; height: 0; border-top: 2px dashed #4a3508; }
 
-        /* Stop list */
+        /* Desktop stop list */
         #stop-list { flex: 1; overflow-y: auto; }
         #stop-list::-webkit-scrollbar { width: 4px; }
         #stop-list::-webkit-scrollbar-track { background: #130c04; }
         #stop-list::-webkit-scrollbar-thumb { background: #4a3508; border-radius: 2px; }
 
+        /* Shared stop-item style (desktop sidebar + mobile sheet) */
         .stop-item {
             display: flex;
             align-items: flex-start;
@@ -120,44 +118,30 @@
 
         .sbadge {
             display: inline-block;
-            background: #6b0000;
-            color: #f0d875;
-            font-size: 8px;
-            padding: 1px 6px;
-            border-radius: 2px;
-            margin-top: 3px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            background: #6b0000; color: #f0d875;
+            font-size: 8px; padding: 1px 6px; border-radius: 2px;
+            margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase;
         }
 
-        /* Controls */
+        .stop-item.stop-minor { opacity: 0.68; }
+        .stop-item.stop-minor .snum { width: 18px; height: 18px; font-size: 8px; }
+        .stop-item.stop-minor .scity { font-size: 12px; }
+        .stype-sym { font-size: 9px; color: #9a7030; margin-left: 4px; }
+
+        /* Desktop controls */
         #controls {
             padding: 12px 14px;
             border-top: 1px solid #4a3508;
             background: #130c04;
         }
 
-        #prog-track {
-            background: #281a07;
-            border-radius: 3px;
-            height: 3px;
-            margin-bottom: 5px;
-            overflow: hidden;
-        }
+        #prog-track { background: #281a07; border-radius: 3px; height: 3px; margin-bottom: 5px; overflow: hidden; }
         #prog-fill {
             height: 100%;
             background: linear-gradient(90deg, #8b0000 0%, #2a4a8b 100%);
-            width: 0%;
-            transition: width 0.6s ease;
-            border-radius: 3px;
+            width: 0%; transition: width 0.6s ease; border-radius: 3px;
         }
-        #prog-text {
-            font-size: 10px;
-            color: #5a3e10;
-            text-align: center;
-            margin-bottom: 9px;
-            min-height: 13px;
-        }
+        #prog-text { font-size: 10px; color: #5a3e10; text-align: center; margin-bottom: 9px; min-height: 13px; }
 
         .btn-row { display: flex; gap: 6px; margin-bottom: 6px; }
 
@@ -176,51 +160,32 @@
         }
         button:hover:not(:disabled) { background: #2d1c09; border-color: #c9a84c; }
         button:disabled { opacity: 0.32; cursor: not-allowed; }
-
-        button.play-btn {
-            background: #6b0000;
-            border-color: #c9a84c;
-            color: #f0d875;
-            font-size: 12px;
-        }
+        button.play-btn { background: #6b0000; border-color: #c9a84c; color: #f0d875; font-size: 12px; }
         button.play-btn:hover:not(:disabled) { background: #8b0000; }
+        button.layer-on { background: #1a2e1a; border-color: #4a8a4a; color: #7ec87e; }
 
         /* ── MAP ─────────────────────────────────────────────── */
         #map { flex: 1; position: relative; }
 
-        /* Date overlay */
+        /* Desktop overlays */
         #date-ov {
             position: absolute;
-            bottom: 34px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 34px; left: 50%; transform: translateX(-50%);
             z-index: 1000;
             background: rgba(16, 9, 3, 0.9);
-            border: 1px solid #6b4e12;
-            border-radius: 3px;
-            padding: 9px 22px;
-            text-align: center;
-            pointer-events: none;
-            transition: opacity 0.35s;
-            white-space: nowrap;
+            border: 1px solid #6b4e12; border-radius: 3px;
+            padding: 9px 22px; text-align: center;
+            pointer-events: none; transition: opacity 0.35s; white-space: nowrap;
         }
         #date-ov.hidden { opacity: 0; }
         .ov-city { font-size: 15px; color: #f0d875; font-weight: bold; }
         .ov-date { font-size: 11px; color: #9a7830; font-style: italic; margin-top: 2px; }
         .ov-day  { font-size: 10px; color: #5a3e10; margin-top: 1px; }
 
-        /* Info panel (top-right when auto-playing) */
         #info-panel {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            z-index: 1000;
-            background: rgba(16, 9, 3, 0.92);
-            border: 1px solid #6b4e12;
-            border-radius: 3px;
-            padding: 12px 16px;
-            max-width: 270px;
-            display: none;
+            position: absolute; top: 16px; right: 16px; z-index: 1000;
+            background: rgba(16, 9, 3, 0.92); border: 1px solid #6b4e12; border-radius: 3px;
+            padding: 12px 16px; max-width: 270px; display: none;
             backdrop-filter: blur(3px);
         }
         #info-panel.visible { display: block; }
@@ -229,51 +194,265 @@
         .ip-loc  { font-size: 11px; color: #c9a84c; font-style: italic; }
         .ip-date { font-size: 11px; color: #9a7030; margin-top: 6px; }
         .ip-notes{ font-size: 11px; color: #c0a060; margin-top: 6px; line-height: 1.55; font-style: italic; }
-        .ip-badge{
-            display: inline-block;
-            background: #7b0000;
-            color: #f0d875;
-            font-size: 9px;
-            padding: 2px 8px;
-            border-radius: 2px;
-            margin-top: 7px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        .ip-close {
-            position: absolute; top: 6px; right: 10px;
-            cursor: pointer; color: #7a5820; font-size: 14px;
-            flex: unset; background: transparent; border: none; padding: 0;
-        }
+        .ip-badge{ display: inline-block; background: #7b0000; color: #f0d875; font-size: 9px; padding: 2px 8px; border-radius: 2px; margin-top: 7px; letter-spacing: 1px; text-transform: uppercase; }
+        .ip-close { position: absolute; top: 6px; right: 10px; cursor: pointer; color: #7a5820; font-size: 14px; flex: unset; background: transparent; border: none; padding: 0; }
         .ip-close:hover { color: #c9a84c; }
+
+        /* ── Rivers ──────────────────────────────────────────── */
+        .river-tip.leaflet-tooltip {
+            background: rgba(8, 18, 28, 0.88);
+            border: 1px solid #2a5870;
+            border-radius: 3px;
+            color: #7ec8ea;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 12px;
+            font-style: italic;
+            padding: 3px 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        .river-tip.leaflet-tooltip-top::before    { border-top-color:    #2a5870; }
+        .river-tip.leaflet-tooltip-bottom::before { border-bottom-color: #2a5870; }
+        .river-tip.leaflet-tooltip-left::before   { border-left-color:   #2a5870; }
+        .river-tip.leaflet-tooltip-right::before  { border-right-color:  #2a5870; }
+
+        /* ── MOBILE UI (hidden on desktop) ───────────────────── */
+        #m-header, #m-bar, #m-card, #m-overlay, #m-sheet { display: none; }
+
+        @media (max-width: 768px) {
+            #sidebar { display: none; }
+            #date-ov, #info-panel { display: none !important; }
+            #map { width: 100vw; height: 100dvh; }
+
+            /* Floating title header */
+            #m-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 0; left: 0; right: 0;
+                height: 46px;
+                z-index: 1001;
+                background: rgba(12, 7, 2, 0.88);
+                border-bottom: 1px solid #5a3e0e;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                padding: 0 12px;
+            }
+            .mh-title { font-size: 11px; color: #f0d875; letter-spacing: 1.5px; text-transform: uppercase; }
+            .mh-sub   { font-size: 9px; color: #8a6828; font-style: italic; margin-top: 1px; }
+
+            /* Stop info card — slides up from above controls bar */
+            #m-card {
+                display: none;
+                position: absolute;
+                left: 0; right: 0; bottom: 62px;
+                z-index: 1003;
+                background: rgba(12, 7, 2, 0.94);
+                border-top: 1px solid #6b4e12;
+                padding: 13px 48px 16px 15px;
+                max-height: 44vh;
+                overflow-y: auto;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            #m-card.show { display: block; }
+
+            .mc-close {
+                position: absolute; top: 10px; right: 12px;
+                background: transparent; border: none; color: #6a4812;
+                font-size: 16px; cursor: pointer; flex: unset; padding: 4px 6px;
+            }
+            .mc-close:hover { color: #c9a84c; }
+            .mc-num   { font-size: 9px; color: #6a4812; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+            .mc-city  { font-size: 22px; color: #f0d875; font-weight: bold; line-height: 1.2; }
+            .mc-loc   { font-size: 12px; color: #c9a84c; font-style: italic; margin-top: 1px; }
+            .mc-date  { font-size: 11px; color: #9a7030; margin-top: 8px; }
+            .mc-notes { font-size: 12px; color: #c8a860; margin-top: 7px; line-height: 1.65; font-style: italic; }
+            .mc-badge-pill {
+                display: inline-block; background: #7b0000; color: #f0d875;
+                font-size: 9px; padding: 2px 9px; border-radius: 2px;
+                margin-top: 9px; letter-spacing: 1px; text-transform: uppercase;
+            }
+
+            /* Floating controls bar */
+            #m-bar {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                position: absolute;
+                bottom: 0; left: 0; right: 0;
+                height: 62px;
+                z-index: 1002;
+                background: rgba(12, 7, 2, 0.93);
+                border-top: 1px solid #5a3e0e;
+                padding: 0 10px env(safe-area-inset-bottom, 0);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            #m-bar button {
+                background: transparent;
+                padding: 0;
+                height: 46px;
+                font-size: 18px;
+                border-radius: 5px;
+                letter-spacing: 0;
+                min-width: 0;
+            }
+            #m-bar button:hover:not(:disabled) {
+                background: rgba(201,168,76,0.1);
+                border-color: #c9a84c;
+            }
+            .mb-play {
+                flex: 1.8 !important;
+                background: rgba(107,0,0,0.55) !important;
+                border-color: #c9a84c !important;
+                color: #f0d875 !important;
+                font-size: 20px !important;
+            }
+            .mb-play:hover:not(:disabled) { background: rgba(139,0,0,0.7) !important; }
+
+            /* Sheet backdrop */
+            #m-overlay {
+                display: none;
+                position: absolute; inset: 0;
+                background: rgba(0,0,0,0.55);
+                z-index: 1004;
+            }
+            #m-overlay.show { display: block; }
+
+            /* Slide-up stop list sheet */
+            #m-sheet {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                bottom: 0; left: 0; right: 0;
+                z-index: 1005;
+                background: #1a0f06;
+                border-top: 2px solid #6b4e12;
+                max-height: 74vh;
+                transform: translateY(100%);
+                transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1);
+            }
+            #m-sheet.open { transform: translateY(0); }
+
+            .ms-handle {
+                width: 38px; height: 4px; background: #4a3508; border-radius: 2px;
+                margin: 10px auto 0; flex-shrink: 0;
+            }
+            .ms-head {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 8px 14px; border-bottom: 1px solid #2a1808; flex-shrink: 0;
+            }
+            .ms-head span { font-size: 11px; color: #c9a84c; letter-spacing: 1px; text-transform: uppercase; }
+            .ms-close {
+                background: transparent; border: none; color: #6a4812;
+                font-size: 16px; cursor: pointer; flex: unset; padding: 4px 6px;
+            }
+            .ms-close:hover { color: #c9a84c; }
+
+            .ms-stats {
+                display: flex; border-bottom: 1px solid #1e1206;
+                background: #140d04; flex-shrink: 0;
+            }
+            .ms-stat {
+                flex: 1; text-align: center; padding: 8px 4px;
+                border-right: 1px solid #1e1206;
+            }
+            .ms-stat:last-child { border-right: none; }
+            .ms-sv { display: block; font-size: 16px; color: #c9a84c; font-weight: bold; line-height: 1; }
+            .ms-sl { display: block; font-size: 8px; color: #5a3e10; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+            #m-list { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+            /* Layer toggles row inside mobile sheet */
+            .ms-layers {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                border-bottom: 1px solid #1e1206;
+                background: #110a03;
+                flex-shrink: 0;
+                flex-wrap: wrap;
+            }
+            .ms-layers-lbl {
+                font-size: 9px; color: #5a3e10;
+                text-transform: uppercase; letter-spacing: 1px;
+                flex-shrink: 0;
+            }
+            .ms-layers button {
+                font-size: 10px; padding: 4px 10px;
+                flex: unset; border-radius: 3px; height: auto;
+            }
+
+            /* Reposition Leaflet controls */
+            .leaflet-top.leaflet-right { top: 52px !important; }
+            .leaflet-top.leaflet-left  { top: 52px !important; }
+            .leaflet-bottom { bottom: 64px !important; }
+
+            /* Mobile OHM slider panel */
+            .m-ohm-ctrl { padding: 6px 14px 8px; background: #0e0903; border-bottom: 1px solid #1e1206; flex-shrink: 0; }
+        }
+
+        /* ── OHM Controls ───────────────────────────────────────── */
+        .hidden { display: none !important; }
+
+        .ohm-ctrl { padding: 6px 0 2px; }
+
+        .ohm-yr-label {
+            font-size: 9px; color: #7a5820;
+            text-align: center; margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        .ohm-yr-label strong { color: #c9a84c; font-size: 12px; }
+
+        .ohm-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 3px; border-radius: 2px;
+            background: #281a07;
+            outline: none; cursor: pointer; margin: 0;
+        }
+        .ohm-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #c9a84c; border: 2px solid #130c04;
+            cursor: pointer; box-shadow: 0 0 5px rgba(201,168,76,0.45);
+        }
+        .ohm-slider::-moz-range-thumb {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #c9a84c; border: 2px solid #130c04;
+            cursor: pointer; box-shadow: 0 0 5px rgba(201,168,76,0.45);
+            border: none;
+        }
     </style>
 </head>
 <body>
 
-<!-- ── SIDEBAR ───────────────────────────────────────────── -->
+<!-- ── DESKTOP SIDEBAR ───────────────────────────────────── -->
 <div id="sidebar">
-
     <div id="sidebar-header">
         <div class="ornament">✦ ✦ ✦</div>
         <h1>Marie Antoinette's<br>Journey to Versailles</h1>
         <div class="journey-sub">Vienna → Versailles · April – May 1770</div>
     </div>
-
     <div id="stats">
-        <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">Stops</div></div>
+        <div class="stat"><div class="stat-val">41</div><div class="stat-lbl">Stops</div></div>
         <div class="stat"><div class="stat-val">26</div><div class="stat-lbl">Days</div></div>
         <div class="stat"><div class="stat-val">~1,800</div><div class="stat-lbl">km</div></div>
         <div class="stat"><div class="stat-val">14</div><div class="stat-lbl">Yrs old</div></div>
     </div>
-
     <div id="legend">
         <div class="leg"><div class="leg-line" style="background:#9b1111"></div>Habsburg</div>
-        <div class="leg"><div class="leg-line" style="background:#1a3a8b"></div>France</div>
+        <div class="leg"><div class="leg-line" style="background:#1a4aab"></div>France</div>
         <div class="leg"><div class="leg-dash"></div>Ahead</div>
+        <div class="leg"><div class="leg-line" style="background:#5ab4d4;opacity:0.75"></div>Rivers</div>
+        <div class="leg"><div class="leg-line" style="background:#e8a838;opacity:0.8"></div>OHM</div>
     </div>
-
     <div id="stop-list"></div>
-
     <div id="controls">
         <div id="prog-track"><div id="prog-fill"></div></div>
         <div id="prog-text">Select a stop or press Play</div>
@@ -285,12 +464,23 @@
         <div class="btn-row">
             <button onclick="resetJourney()">↺ Reset</button>
             <button onclick="showOverview()">⊞ Overview</button>
+            <button id="btn-cassini" onclick="toggleCassini()" title="Cassini survey of France, 1756–1815">Cassini</button>
+        </div>
+        <div class="btn-row">
+            <button id="btn-ohm" onclick="toggleOHM()" title="OpenHistoricalMap — historical features with date filter">⌛ OHM History</button>
+        </div>
+        <div id="ohm-ctrl" class="ohm-ctrl hidden">
+            <div class="ohm-yr-label">Filter by year: <strong id="ohm-yr-val">—</strong></div>
+            <input type="range" id="ohm-slider" min="1000" max="1900" value="1770" step="10"
+                   class="ohm-slider" oninput="updateOhmDate(this.value)">
         </div>
     </div>
 </div>
 
 <!-- ── MAP ──────────────────────────────────────────────── -->
 <div id="map">
+
+    <!-- Desktop overlays -->
     <div id="date-ov" class="hidden">
         <div class="ov-city" id="ov-city"></div>
         <div class="ov-date" id="ov-date"></div>
@@ -305,55 +495,144 @@
         <div class="ip-notes" id="ip-notes"></div>
         <div id="ip-badge-wrap"></div>
     </div>
+
+    <!-- Mobile: floating title -->
+    <div id="m-header">
+        <div class="mh-title">✦ Marie Antoinette · 1770 ✦</div>
+        <div class="mh-sub">Vienna → Versailles</div>
+    </div>
+
+    <!-- Mobile: stop info card -->
+    <div id="m-card">
+        <button class="mc-close" onclick="closeMobileCard()">✕</button>
+        <div class="mc-num"   id="mc-num"></div>
+        <div class="mc-city"  id="mc-city"></div>
+        <div class="mc-loc"   id="mc-loc"></div>
+        <div class="mc-date"  id="mc-date"></div>
+        <div class="mc-notes" id="mc-notes"></div>
+        <div id="mc-badge"></div>
+    </div>
+
+    <!-- Mobile: controls bar -->
+    <div id="m-bar">
+        <button onclick="showOverview()" title="Overview">⊞</button>
+        <button id="mb-prev" onclick="prevStop()" disabled>◀</button>
+        <button id="mb-play" class="mb-play" onclick="togglePlay()">▶</button>
+        <button id="mb-next" onclick="nextStop()">▶</button>
+        <button onclick="toggleSheet()" title="All Stops">≡</button>
+    </div>
+
+    <!-- Mobile: sheet backdrop -->
+    <div id="m-overlay" onclick="closeSheet()"></div>
+
+    <!-- Mobile: stop list sheet -->
+    <div id="m-sheet">
+        <div class="ms-handle"></div>
+        <div class="ms-head">
+            <span>The Journey · 41 Stops</span>
+            <button class="ms-close" onclick="closeSheet()">✕</button>
+        </div>
+        <div class="ms-stats">
+            <div class="ms-stat"><span class="ms-sv">41</span><span class="ms-sl">Stops</span></div>
+            <div class="ms-stat"><span class="ms-sv">26</span><span class="ms-sl">Days</span></div>
+            <div class="ms-stat"><span class="ms-sv">~1,800</span><span class="ms-sl">km</span></div>
+            <div class="ms-stat"><span class="ms-sv">14</span><span class="ms-sl">Yrs old</span></div>
+        </div>
+        <div class="ms-layers">
+            <span class="ms-layers-lbl">Layers</span>
+            <button id="mb-cassini" onclick="toggleCassini()" title="Cassini survey of France, 1756–1815">Cassini Map</button>
+            <button id="mb-ohm" onclick="toggleOHM()" title="OpenHistoricalMap historical layer">OHM</button>
+        </div>
+        <div id="m-ohm-ctrl" class="m-ohm-ctrl hidden">
+            <div class="ohm-yr-label">Year: <strong id="m-ohm-yr-val">1770</strong></div>
+            <input type="range" id="m-ohm-slider" min="1000" max="1900" value="1770" step="10"
+                   class="ohm-slider" oninput="updateOhmDate(this.value)">
+        </div>
+        <div id="m-list"></div>
+    </div>
 </div>
 
 <script>
 // ── Data ───────────────────────────────────────────────────
 const STOPS = [
-    { order:1,  city:'Vienna',     loc:'Schönbrunn Palace',         date:'21 Apr 1770',    cert:'exact',  day:1,  lat:48.1858124, lng:16.3127641, notes:'Departure; procession of ~57 carriages and 450 horses', badge:null },
-    { order:2,  city:'Melk',       loc:'Melk Abbey',                date:'21–22 Apr 1770', cert:'approx', day:2,  lat:48.2282795, lng:15.3312091, notes:'First overnight stop; met by brother Joseph II', badge:null },
-    { order:3,  city:'Lambach',    loc:'Lambach Abbey',             date:'23 Apr 1770',    cert:'approx', day:3,  lat:48.0912808, lng:13.8754787, notes:'Rococo theatre performance on the River Traun', badge:null },
-    { order:4,  city:'Munich',     loc:'Nymphenburg / Amalienburg', date:'24–25 Apr 1770', cert:'approx', day:5,  lat:48.1582675, lng:11.5033143, notes:'Entered Bavaria; granted a day of rest', badge:null },
-    { order:5,  city:'Günzburg',   loc:'Swabia',                    date:'27–28 Apr 1770', cert:'approx', day:8,  lat:48.4528412, lng:10.2775127, notes:'Broke journey ~2 days; joined by aunt Anne Charlotte of Lorraine', badge:null },
-    { order:6,  city:'Freiburg',   loc:'Freiburg im Breisgau',      date:'4–5 May 1770',   cert:'approx', day:15, lat:47.9990077, lng:7.8421043,  notes:'Among last stops on Habsburg-controlled soil', badge:null },
-    { order:7,  city:'Kehl',       loc:'Rhine Island',              date:'7 May 1770',     cert:'exact',  day:17, lat:48.5788725, lng:7.8160821,  notes:'The remise: stripped of all things Austrian and re-dressed as French on an island in the Rhine', badge:'The Remise' },
-    { order:8,  city:'Strasbourg', loc:'Strasbourg Cathedral',      date:'7–8 May 1770',   cert:'approx', day:18, lat:48.5818799, lng:7.7510348,  notes:'First French city; Thanksgiving Mass and illuminations', badge:null },
-    { order:9,  city:'Compiègne',  loc:'Château de Compiègne',      date:'14 May 1770',    cert:'exact',  day:24, lat:49.4192921, lng:2.8311798,  notes:'First meeting with Louis XV and the Dauphin', badge:'Meets the Dauphin' },
-    { order:10, city:'Paris',      loc:'Château de la Muette',      date:'15 May 1770',    cert:'exact',  day:25, lat:48.8625,    lng:2.268,      notes:'Final overnight on the edge of Paris; a violent thunderstorm struck that night', badge:null },
-    { order:11, city:'Versailles', loc:'Palace of Versailles',      date:'16 May 1770',    cert:'exact',  day:26, lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin that same evening', badge:'Wedding Day' },
+    // ── Austria ─────────────────────────────────────────────
+    { order:1,  city:'Vienna',          loc:'Schönbrunn Palace',                 date:'21 Apr 1770',      cert:'exact',  day:1,  type:'departure',     lat:48.1858124, lng:16.3127641, notes:'Departure ~9:30am; procession of ~57 carriages, 235 persons, ~350 horses', badge:null },
+    { order:2,  city:'St Pölten',       loc:'St Pölten',                         date:'21 Apr 1770',      cert:'approx', day:1,  type:'pass-through',  lat:48.2046985, lng:15.6256711, notes:'Passed through on day 1 en route to Melk', badge:null },
+    { order:3,  city:'Melk',            loc:'Melk Abbey',                        date:'21–22 Apr 1770',   cert:'exact',  day:1,  type:'overnight',     lat:48.2282795, lng:15.3312091, notes:'Night 1; met by brother Joseph II; convent pupils performed an opera', badge:null },
+    { order:4,  city:'Amstetten',       loc:'Amstetten',                         date:'22 Apr 1770',      cert:'approx', day:2,  type:'pass-through',  lat:48.1229000, lng:14.8720000, notes:'Passed via Kemmelbach and Amstetten toward Enns', badge:null },
+    { order:5,  city:'Strengberg',      loc:'Strengberg',                        date:'22 Apr 1770',      cert:'approx', day:2,  type:'pass-through',  lat:48.1500000, lng:14.6333000, notes:'Pass-through on the road to Enns', badge:null },
+    { order:6,  city:'Enns',            loc:'Schloss Ennsegg',                   date:'22–23 Apr 1770',   cert:'exact',  day:2,  type:'overnight',     lat:48.2150378, lng:14.4814837, notes:'Night 2 at the castle', badge:null },
+    { order:7,  city:'Wels',            loc:'Wels',                              date:'23 Apr 1770',      cert:'approx', day:3,  type:'pass-through',  lat:48.1575000, lng:14.0289000, notes:'Passed via Kleinmünchen and Wels toward Lambach', badge:null },
+    { order:8,  city:'Lambach',         loc:'Lambach Abbey',                     date:'23–24 Apr 1770',   cert:'exact',  day:3,  type:'overnight',     lat:48.0912808, lng:13.8754787, notes:'Night 3; Rococo abbey theatre on the River Traun', badge:null },
+    { order:9,  city:'Ried im Innkreis',loc:'Ried',                              date:'24 Apr 1770',      cert:'approx', day:4,  type:'pass-through',  lat:48.2103000, lng:13.4894000, notes:'Passed via Haag and Ried', badge:null },
+    { order:10, city:'Braunau am Inn',  loc:'Braunau am Inn',                    date:'24–25 Apr 1770',   cert:'approx', day:4,  type:'overnight',     lat:48.2585000, lng:13.0356000, notes:'Night 4; crossing point toward Bavaria on the River Inn', badge:null },
+    // ── Bavaria / Germany ────────────────────────────────────
+    { order:11, city:'Altötting',       loc:'Altötting',                         date:'25–26 Apr 1770',   cert:'approx', day:5,  type:'overnight',     lat:48.2236975, lng:12.6799462, notes:'Night 5; major Marian pilgrimage site', badge:null },
+    { order:12, city:'Munich',          loc:'Nymphenburg Palace / Amalienburg',  date:'26–27 Apr 1770',   cert:'exact',  day:6,  type:'overnight',     lat:48.1582675, lng:11.5033143, notes:'Arrived 26 Apr; entertained by Elector Maximilian III Joseph; full rest day in the Amalienburg pavilion', badge:null },
+    { order:13, city:'Augsburg',        loc:'Schaezlerpalais',                   date:'28–29 Apr 1770',   cert:'exact',  day:8,  type:'overnight',     lat:48.3650195, lng:10.8993149, notes:'Ball in the Schaezlerpalais rococo ballroom; made honorary member of the Academy of Sciences and Fine Arts', badge:null },
+    { order:14, city:'Günzburg',        loc:'Günzburg',                          date:'29–30 Apr 1770',   cert:'exact',  day:9,  type:'overnight',     lat:48.4528412, lng:10.2775127, notes:'Two-day stop; reunited with aunt Princess Charlotte of Lorraine', badge:null },
+    { order:15, city:'Königinbild',     loc:'Maria Königinbild pilgrimage church',date:'30 Apr 1770',     cert:'approx', day:10, type:'excursion',     lat:48.3700000, lng:10.3300000, notes:'Pilgrimage excursion with her aunt during the Günzburg rest day; she gave a silver eternal lamp', badge:null },
+    { order:16, city:'Ulm',             loc:'Ulm',                               date:'1 May 1770',       cert:'approx', day:11, type:'pass-through',  lat:48.4010822, lng:9.9876076,  notes:'Passed through after Günzburg via Ehingen', badge:null },
+    { order:17, city:'Obermarchtal',    loc:'Obermarchtal Abbey',                date:'1–2 May 1770',     cert:'exact',  day:11, type:'overnight',     lat:48.2362413, lng:9.5705992,  notes:'Night of 1–2 May at the abbey', badge:null },
+    { order:18, city:'Riedlingen',      loc:'Riedlingen',                        date:'2 May 1770',       cert:'approx', day:12, type:'pass-through',  lat:48.1596486, lng:9.4713346,  notes:"On the Danube in Upper Swabia; a bypass 'Dauphinéstrasse' was specially built for the procession", badge:null },
+    { order:19, city:'Mengen',          loc:'Mengen',                            date:'2 May 1770',       cert:'approx', day:12, type:'pass-through',  lat:48.0494000, lng:9.3306000,  notes:'Passed via Mengen', badge:null },
+    { order:20, city:'Meßkirch',        loc:'Meßkirch',                          date:'2 May 1770',       cert:'approx', day:12, type:'pass-through',  lat:47.9944211, lng:9.1156399,  notes:'Passed via Meßkirch toward Stockach', badge:null },
+    { order:21, city:'Stockach',        loc:"Inn 'Weißes Kreuz' (White Cross)",  date:'2–3 May 1770',     cert:'exact',  day:12, type:'overnight',     lat:47.8531635, lng:9.0091528,  notes:'Overnight at the White Cross inn', badge:null },
+    { order:22, city:'Engen',           loc:'Engen',                             date:'3 May 1770',       cert:'approx', day:13, type:'pass-through',  lat:47.8556000, lng:8.7722000,  notes:'Passed via Nenzingen, Eigeltingen, Aach, Engen', badge:null },
+    { order:23, city:'Geisingen',       loc:'Geisingen',                         date:'3 May 1770',       cert:'approx', day:13, type:'pass-through',  lat:47.9211000, lng:8.6500000,  notes:'Pass-through toward Donaueschingen', badge:null },
+    { order:24, city:'Donaueschingen',  loc:'Schloss Donaueschingen',            date:'3–4 May 1770',     cert:'exact',  day:13, type:'overnight',     lat:47.9520238, lng:8.5031033,  notes:'Night at the schloss; welcomed by Prince Joseph Wenzel; local roads hastily repaired for her arrival', badge:null },
+    { order:25, city:'Hofgut Sternen',  loc:'Hofgut Sternen / Höllental gorge', date:'4 May 1770',       cert:'exact',  day:14, type:'excursion',     lat:47.9166074, lng:8.0734860,  notes:"Stop at the old Black Forest guesthouse; descent through the dramatic Höllental ('Hell Valley')", badge:null },
+    { order:26, city:'Freiburg',        loc:'Kageneckschen Haus, Salzstraße',   date:'4–5 May 1770',     cert:'exact',  day:14, type:'overnight',     lat:47.9990077, lng:7.8421043,  notes:"Two-day stop; entry route long called 'Dauphinéstrasse'; last major German city", badge:null },
+    { order:27, city:'Schuttern',       loc:'Schuttern Abbey',                   date:'6–7 May 1770',     cert:'exact',  day:16, type:'overnight',     lat:48.3816782, lng:7.8528796,  notes:'Last night on German soil / within the Holy Roman Empire; illuminations and cannon salute', badge:null },
+    // ── Rhine border / France ────────────────────────────────
+    { order:28, city:'Kehl',            loc:'Rhine island (Kommissionsinsel)',   date:'7 May 1770',       cert:'exact',  day:17, type:'ceremony',      lat:48.5788725, lng:7.8160821,  notes:'The remise: stripped of all Austrian attire and attendants in a three-part wooden pavilion; became Dauphine of France', badge:'The Remise' },
+    { order:29, city:'Strasbourg',      loc:'Strasbourg Cathedral',              date:'7–8 May 1770',     cert:'exact',  day:17, type:'overnight',     lat:48.5818799, lng:7.7510348,  notes:'First French city; illuminations, flowers, Thanksgiving Mass; greeted by Prince Louis de Rohan', badge:null },
+    { order:30, city:'Saverne',           loc:'Château des Rohan',                  date:'8–9 May 1770',    cert:'exact',  day:18, type:'overnight',     lat:48.7420391, lng:7.3637590,  notes:'First French stage; her first sight of a French princely residence, recently embellished', badge:null },
+    { order:31, city:'Lunéville',         loc:'Château de Lunéville',               date:'8 May 1770',      cert:'approx', day:18, type:'pass-through',  lat:48.5946917, lng:6.4920164,  notes:"Received military honours (gendarmerie, marquis de Castries); on the road from Saverne toward Nancy", badge:null },
+    { order:32, city:'Nancy',             loc:'Église des Cordeliers / Pavillon Alliot', date:'9–10 May 1770', cert:'exact', day:19, type:'overnight',  lat:48.6976330, lng:6.1790269,  notes:'Arrived at nightfall; prayed at the tombs of her paternal Lorraine ancestors; ancestral capital of her House', badge:null },
+    { order:33, city:'Toul',              loc:'Toul',                               date:'10 May 1770',     cert:'approx', day:20, type:'pass-through',  lat:48.6782960, lng:5.8901590,  notes:'Passed through west of Nancy toward Commercy', badge:null },
+    { order:34, city:'Commercy',          loc:'Commercy',                           date:'10 May 1770',     cert:'approx', day:20, type:'pass-through',  lat:48.7631660, lng:5.5913769,  notes:'A ten-year-old girl presented her with flowers and a compliment', badge:null },
+    { order:35, city:'Bar-le-Duc',        loc:'Bar-le-Duc',                         date:'10–11 May 1770',  cert:'exact',  day:20, type:'overnight',     lat:48.7748253, lng:5.1599327,  notes:"Overnight ('couchait à Bar'); former capital of the Duchy of Bar", badge:null },
+    { order:36, city:'Châlons-sur-Marne', loc:"Hôtel de l'Intendance",              date:'11–12 May 1770',  cert:'exact',  day:21, type:'overnight',     lat:48.9566820, lng:4.3630730,  notes:"Theatre performance of 'La Partie de chasse de Henri IV'; fireworks and illuminations", badge:null },
+    { order:37, city:'Reims',             loc:'Reims (Cathedral city)',              date:'12 May 1770',     cert:'exact',  day:22, type:'pass-through',  lat:49.2538280, lng:4.0340474,  notes:'Passed through the coronation city on 12 May', badge:null },
+    { order:38, city:'Soissons',          loc:'Soissons',                            date:'12–13 May 1770',  cert:'exact',  day:22, type:'overnight',     lat:49.3770386, lng:3.3286377,  notes:"48-hour stay (12–14 May); greeted by the duc d'Aumont on behalf of the King", badge:null },
+    { order:39, city:'Compiègne',         loc:'Château de Compiègne',               date:'14 May 1770',     cert:'exact',  day:24, type:'ceremony',      lat:49.4192921, lng:2.8311798,  notes:'First meeting with King Louis XV and the Dauphin Louis-Auguste in the forest', badge:'Meets the Dauphin' },
+    { order:40, city:'Paris',             loc:'Château de la Muette',               date:'15 May 1770',     cert:'exact',  day:25, type:'overnight',     lat:48.8625000, lng:2.2680000,  notes:'Final overnight on the edge of Paris; thunderstorm that night', badge:null },
+    { order:41, city:'Versailles',        loc:'Palace of Versailles',               date:'16 May 1770',     cert:'exact',  day:26, type:'arrival',       lat:48.8048649, lng:2.1203554,  notes:'Arrived ~9:30am; married the Dauphin in the Royal Chapel that day. She was 14; he was 15', badge:'Wedding Day' },
 ];
 
-// Habsburg territory ends at Kehl (index 6)
-const HABSBURG_END = 6;
+const HABSBURG_END = 27; // index of Kehl — Habsburg leg ends here, French leg begins
 
 // ── State ──────────────────────────────────────────────────
-let current = -1;
-let playing  = false;
-let playTimer = null;
+let current     = -1;
+let playing     = false;
+let playTimer   = null;
+let sheetOpen   = false;
 let leafMarkers = [];
+
+// ── Mobile detection ───────────────────────────────────────
+function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
 
 // ── Map init ───────────────────────────────────────────────
 const map = L.map('map', { center:[48.4, 9.5], zoom:6, zoomControl:true });
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains:'abcd', maxZoom:19
-}).addTo(map);
+L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}',
+    {
+        attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> — Source: US National Park Service',
+        maxNativeZoom: 8,
+        maxZoom: 18,
+    }
+).addTo(map);
 
 // ── Route polylines ────────────────────────────────────────
 const COORDS = STOPS.map(s => [s.lat, s.lng]);
 
-// Ghost (always visible, muted dashed)
-L.polyline(COORDS.slice(0, HABSBURG_END+1), {
-    color:'#8b1111', weight:1.5, opacity:0.15, dashArray:'6 9'
-}).addTo(map);
-L.polyline(COORDS.slice(HABSBURG_END), {
-    color:'#1a3a8b', weight:1.5, opacity:0.15, dashArray:'6 9'
-}).addTo(map);
+L.polyline(COORDS.slice(0, HABSBURG_END+1), { color:'#8b1111', weight:1.5, opacity:0.22, dashArray:'6 9' }).addTo(map);
+L.polyline(COORDS.slice(HABSBURG_END),      { color:'#1a3a8b', weight:1.5, opacity:0.22, dashArray:'6 9' }).addTo(map);
 
-// Revealed (built up as journey progresses)
-const lineH = L.polyline([], { color:'#9b1111', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
-const lineF = L.polyline([], { color:'#1a3a8b', weight:3.5, opacity:0.88, lineCap:'round', lineJoin:'round' }).addTo(map);
+const lineH = L.polyline([], { color:'#9b1111', weight:3.5, opacity:0.90, lineCap:'round', lineJoin:'round' }).addTo(map);
+const lineF = L.polyline([], { color:'#1a4aab', weight:3.5, opacity:0.90, lineCap:'round', lineJoin:'round' }).addTo(map);
 
 function revealRoute(idx) {
     if (idx < 0) { lineH.setLatLngs([]); lineF.setLatLngs([]); return; }
@@ -366,39 +645,44 @@ function revealRoute(idx) {
     }
 }
 
-// ── Custom markers ─────────────────────────────────────────
+// ── Markers ────────────────────────────────────────────────
 function mkIcon(stop, state) {
-    const isLast = stop.order === 11;
+    const isLast    = stop.order === STOPS.length;
+    const isMinor   = stop.type === 'pass-through' || stop.type === 'excursion';
+    const isFrench  = stop.order > HABSBURG_END + 1; // Strasbourg onwards
+    const baseSize  = isMinor ? 18 : 26;
+    const activeBg  = isLast ? '#3e006a' : (isFrench ? '#1a3a8b' : '#8b0000');
+    const activeGlw = isLast ? 'rgba(62,0,106,0.75)' : (isFrench ? 'rgba(26,58,139,0.7)' : 'rgba(139,0,0,0.7)');
     const CFG = {
-        future:  { bg:'#e0d8c8', bd:'#9a8060', tx:'#7a6040', sz:26 },
-        visited: { bg:'#c9a84c', bd:'#7a6010', tx:'#160d04', sz:26 },
-        active:  { bg: isLast ? '#3e006a' : '#8b0000', bd:'#f0d875', tx:'#f0d875', sz:34 },
+        future:  { bg:'#e0d8c8', bd:'#9a8060', tx:'#7a6040', sz: baseSize },
+        visited: { bg:'#c9a84c', bd:'#7a6010', tx:'#160d04', sz: baseSize },
+        active:  { bg: activeBg, bd:'#f0d875', tx:'#f0d875', sz:34 },
     }[state];
-
     const glow = state==='active'
-        ? `0 0 14px ${isLast?'rgba(62,0,106,0.75)':'rgba(139,0,0,0.7)'}, 0 2px 7px rgba(0,0,0,0.5)`
+        ? `0 0 14px ${activeGlw}, 0 2px 7px rgba(0,0,0,0.5)`
         : '0 1px 4px rgba(0,0,0,0.3)';
-
     return L.divIcon({
         className:'',
         html:`<div style="
             width:${CFG.sz}px;height:${CFG.sz}px;border-radius:50%;
             background:${CFG.bg};border:2.5px solid ${CFG.bd};color:${CFG.tx};
             display:flex;align-items:center;justify-content:center;
-            font-size:${CFG.sz===34?13:10}px;font-weight:bold;font-family:Georgia,serif;
+            font-size:${CFG.sz===34?13:CFG.sz<=18?8:10}px;font-weight:bold;font-family:Georgia,serif;
             box-shadow:${glow};cursor:pointer;
             margin-left:${-CFG.sz/2}px;margin-top:${-CFG.sz/2}px;
         ">${stop.order}</div>`,
-        iconSize:[CFG.sz, CFG.sz],
-        iconAnchor:[CFG.sz/2, CFG.sz/2]
+        iconSize:[CFG.sz,CFG.sz], iconAnchor:[CFG.sz/2,CFG.sz/2]
     });
 }
 
+const TYPE_LABEL = { 'departure':'Departure', 'pass-through':'Pass-through', 'overnight':'Overnight', 'excursion':'Excursion', 'ceremony':'Ceremony', 'arrival':'Arrival' };
+
 function popupHTML(s) {
     const approx = s.cert==='approx' ? ' <em style="font-size:9px;color:#6a4810">(approx.)</em>' : '';
+    const typeStr = TYPE_LABEL[s.type] ? ` · ${TYPE_LABEL[s.type]}` : '';
     return `<div style="min-width:200px;font-family:Georgia,serif">
         <div style="border-bottom:1px solid #3e2808;padding-bottom:7px;margin-bottom:7px">
-            <div style="font-size:9px;color:#8a6030;letter-spacing:2px;text-transform:uppercase">Stop ${s.order} of 11 · Day ${s.day}</div>
+            <div style="font-size:9px;color:#8a6030;letter-spacing:2px;text-transform:uppercase">Stop ${s.order} of ${STOPS.length} · Day ${s.day}${typeStr}</div>
             <div style="font-size:17px;color:#f0d875;font-weight:bold;line-height:1.2">${s.city}</div>
             <div style="font-size:11px;color:#c9a84c;font-style:italic">${s.loc}</div>
         </div>
@@ -408,34 +692,47 @@ function popupHTML(s) {
     </div>`;
 }
 
-// Create markers
 STOPS.forEach((s, i) => {
+    const isMinor = s.type === 'pass-through' || s.type === 'excursion';
     const m = L.marker([s.lat, s.lng], {
         icon: mkIcon(s, 'future'),
-        zIndexOffset: i===10 ? 1000 : i
+        zIndexOffset: i===STOPS.length-1 ? 1000 : isMinor ? 0 : 10 + i
     }).addTo(map);
     m.bindPopup(popupHTML(s), { maxWidth:300, className:'ma-popup' });
-    m.on('click', () => { if (!playing) goTo(i); });
+    m.on('click', () => {
+        if (!playing) {
+            goTo(i);
+            if (isMobile()) leafMarkers[i].closePopup();
+        }
+    });
     leafMarkers.push(m);
 });
 
-// ── Sidebar stop list ──────────────────────────────────────
-const listEl = document.getElementById('stop-list');
-STOPS.forEach((s, i) => {
+// ── Stop lists (desktop sidebar + mobile sheet) ────────────
+function buildStopItem(s, i, idPrefix) {
     const el = document.createElement('div');
-    el.className = 'stop-item';
-    el.id = `si-${i}`;
+    const isMinor = s.type === 'pass-through' || s.type === 'excursion';
+    el.className = `stop-item${isMinor ? ' stop-minor' : ''}`;
+    el.id = `${idPrefix}${i}`;
+    const typeIcon = { 'ceremony':'⚜', 'departure':'↗', 'arrival':'★', 'excursion':'↻' }[s.type] || '';
     el.innerHTML = `
         <div class="snum">${s.order}</div>
         <div class="stxt">
-            <div class="scity">${s.city}</div>
+            <div class="scity">${s.city}${typeIcon ? `<span class="stype-sym">${typeIcon}</span>` : ''}</div>
             <div class="sloc">${s.loc}</div>
             <div class="sdate">${s.date}</div>
             ${s.badge?`<span class="sbadge">✦ ${s.badge}</span>`:''}
         </div>
         <div class="sdayn">Day ${s.day}</div>`;
     el.onclick = () => goTo(i);
-    listEl.appendChild(el);
+    return el;
+}
+
+const desktopList = document.getElementById('stop-list');
+const mobileList  = document.getElementById('m-list');
+STOPS.forEach((s, i) => {
+    desktopList.appendChild(buildStopItem(s, i, 'si-'));
+    mobileList.appendChild(buildStopItem(s, i, 'ms-'));
 });
 
 // ── Core navigation ────────────────────────────────────────
@@ -445,45 +742,55 @@ function goTo(idx) {
 
     // Markers
     leafMarkers.forEach((m, i) => {
-        const state = i < idx ? 'visited' : i===idx ? 'active' : 'future';
-        m.setIcon(mkIcon(STOPS[i], state));
-        m.setZIndexOffset(i===idx ? 2000 : i===10 ? 1000 : i);
+        m.setIcon(mkIcon(STOPS[i], i < idx ? 'visited' : i===idx ? 'active' : 'future'));
+        m.setZIndexOffset(i===idx ? 2000 : i===STOPS.length-1 ? 1000 : i);
         if (i !== idx) m.closePopup();
     });
 
-    // Route lines
+    // Route
     revealRoute(idx);
 
-    // Sidebar list
-    document.querySelectorAll('.stop-item').forEach((el, i) => {
+    // Desktop sidebar list
+    document.querySelectorAll('#stop-list .stop-item').forEach((el, i) => {
         el.classList.toggle('active',  i===idx);
         el.classList.toggle('visited', i<idx);
     });
-    document.getElementById(`si-${idx}`).scrollIntoView({ behavior:'smooth', block:'nearest' });
+    document.getElementById(`si-${idx}`)?.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
-    // Bottom date overlay
+    // Mobile sheet list
+    document.querySelectorAll('#m-list .stop-item').forEach((el, i) => {
+        el.classList.toggle('active',  i===idx);
+        el.classList.toggle('visited', i<idx);
+    });
+
+    // Desktop: date overlay + info panel
     document.getElementById('ov-city').textContent = s.city;
     document.getElementById('ov-date').textContent = s.date;
     document.getElementById('ov-day').textContent  = `Day ${s.day} of the journey`;
     document.getElementById('date-ov').classList.remove('hidden');
-
-    // Info panel (show during play, or on click)
     showInfoPanel(s);
 
-    // Fly + popup
-    map.flyTo([s.lat, s.lng], 9, { duration:1.4, easeLinearity:0.5 });
-    setTimeout(() => leafMarkers[idx].openPopup(), 1500);
-
-    // Progress bar + label
+    // Desktop: progress + nav buttons
     document.getElementById('prog-fill').style.width = ((idx+1)/STOPS.length*100)+'%';
     document.getElementById('prog-text').textContent = `Stop ${idx+1} of ${STOPS.length}: ${s.city}`;
     document.getElementById('btn-prev').disabled = idx <= 0;
     document.getElementById('btn-next').disabled = idx >= STOPS.length-1;
+
+    // Mobile: card + nav + close sheet
+    if (isMobile()) {
+        closeSheet();
+        updateMobileCard(s);
+    }
+    syncMobileNav(idx);
+
+    // Fly + popup (desktop only)
+    map.flyTo([s.lat, s.lng], 9, { duration:1.4, easeLinearity:0.5 });
+    if (!isMobile()) setTimeout(() => leafMarkers[idx].openPopup(), 1500);
 }
 
-// ── Info panel ─────────────────────────────────────────────
+// ── Desktop info panel ─────────────────────────────────────
 function showInfoPanel(s) {
-    document.getElementById('ip-num').textContent   = `Stop ${s.order} of 11 · Day ${s.day}`;
+    document.getElementById('ip-num').textContent   = `Stop ${s.order} of ${STOPS.length} · Day ${s.day}`;
     document.getElementById('ip-city').textContent  = s.city;
     document.getElementById('ip-loc').textContent   = s.loc;
     document.getElementById('ip-date').textContent  = s.date + (s.cert==='approx'?' (approx.)':'');
@@ -492,9 +799,44 @@ function showInfoPanel(s) {
         ? `<div class="ip-badge">✦ ${s.badge}</div>` : '';
     document.getElementById('info-panel').classList.add('visible');
 }
+function closeInfoPanel() { document.getElementById('info-panel').classList.remove('visible'); }
 
-function closeInfoPanel() {
-    document.getElementById('info-panel').classList.remove('visible');
+// ── Mobile helpers ─────────────────────────────────────────
+function updateMobileCard(s) {
+    const approx = s.cert==='approx' ? ' (approx.)' : '';
+    document.getElementById('mc-num').textContent   = `Stop ${s.order} of ${STOPS.length} · Day ${s.day}`;
+    document.getElementById('mc-city').textContent  = s.city;
+    document.getElementById('mc-loc').textContent   = s.loc;
+    document.getElementById('mc-date').textContent  = s.date + approx;
+    document.getElementById('mc-notes').textContent = s.notes;
+    document.getElementById('mc-badge').innerHTML   = s.badge
+        ? `<div class="mc-badge-pill">✦ ${s.badge}</div>` : '';
+    document.getElementById('m-card').classList.add('show');
+}
+function closeMobileCard() { document.getElementById('m-card').classList.remove('show'); }
+
+function syncMobileNav(idx) {
+    const prev = document.getElementById('mb-prev');
+    const next = document.getElementById('mb-next');
+    if (prev) prev.disabled = idx <= 0;
+    if (next) next.disabled = idx >= STOPS.length-1;
+}
+
+function syncMobilePlayBtn() {
+    const btn = document.getElementById('mb-play');
+    if (btn) btn.textContent = playing ? '⏸' : '▶';
+}
+
+function toggleSheet() { sheetOpen ? closeSheet() : openSheet(); }
+function openSheet() {
+    sheetOpen = true;
+    document.getElementById('m-sheet').classList.add('open');
+    document.getElementById('m-overlay').classList.add('show');
+}
+function closeSheet() {
+    sheetOpen = false;
+    document.getElementById('m-sheet').classList.remove('open');
+    document.getElementById('m-overlay').classList.remove('show');
 }
 
 // ── Playback ───────────────────────────────────────────────
@@ -506,6 +848,7 @@ function togglePlay() { playing ? pauseJourney() : startJourney(); }
 function startJourney() {
     playing = true;
     document.getElementById('btn-play').textContent = '⏸ Pause';
+    syncMobilePlayBtn();
     if (current >= STOPS.length-1) { current = -1; clearVisuals(); }
 
     function step() {
@@ -521,6 +864,7 @@ function startJourney() {
 function pauseJourney() {
     playing = false;
     document.getElementById('btn-play').textContent = '▶ Play';
+    syncMobilePlayBtn();
     clearTimeout(playTimer);
     playTimer = null;
 }
@@ -532,13 +876,16 @@ function clearVisuals() {
         m.closePopup();
     });
     revealRoute(-1);
-    document.querySelectorAll('.stop-item').forEach(el => el.classList.remove('active','visited'));
+    document.querySelectorAll('#stop-list .stop-item, #m-list .stop-item')
+        .forEach(el => el.classList.remove('active','visited'));
     document.getElementById('prog-fill').style.width = '0%';
     document.getElementById('prog-text').textContent = 'Select a stop or press Play';
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-next').disabled = false;
     document.getElementById('date-ov').classList.add('hidden');
     closeInfoPanel();
+    closeMobileCard();
+    syncMobileNav(-1);
 }
 
 function resetJourney() {
@@ -553,13 +900,11 @@ function showOverview() {
 }
 
 // ── Leaflet style overrides ────────────────────────────────
-const style = document.createElement('style');
-style.textContent = `
+const css = document.createElement('style');
+css.textContent = `
     .ma-popup .leaflet-popup-content-wrapper {
-        background:#1c1006 !important;
-        border:1px solid #6b4e12 !important;
-        border-radius:3px !important;
-        color:#e8d5a3 !important;
+        background:#1c1006 !important; border:1px solid #6b4e12 !important;
+        border-radius:3px !important; color:#e8d5a3 !important;
         box-shadow:0 4px 24px rgba(0,0,0,0.75);
     }
     .ma-popup .leaflet-popup-tip { background:#1c1006 !important; }
@@ -569,10 +914,228 @@ style.textContent = `
     .leaflet-bar { border-color:#4a3508 !important; }
     .leaflet-control-attribution { background:rgba(16,9,3,0.8) !important; color:#4a3208 !important; font-size:9px; }
     .leaflet-control-attribution a { color:#6a4810 !important; }
+    .river-pop .leaflet-popup-content-wrapper {
+        background:#0c1520 !important; border:1px solid #2a5870 !important;
+        border-radius:3px !important; box-shadow:0 4px 20px rgba(0,0,0,0.75) !important;
+    }
+    .river-pop .leaflet-popup-content { margin:10px 16px !important; }
+    .river-pop .leaflet-popup-tip { background:#0c1520 !important; }
+    .river-pop .leaflet-popup-close-button { color:#4a7890 !important; top:5px !important; right:8px !important; }
 `;
-document.head.appendChild(style);
+document.head.appendChild(css);
+
+// ── Cassini overlay (IGN Géoplateforme, no key required) ──
+let cassiniLayer = null;
+let cassiniOn    = false;
+
+function toggleCassini() {
+    cassiniOn = !cassiniOn;
+
+    if (cassiniOn) {
+        if (!cassiniLayer) {
+            cassiniLayer = L.tileLayer(
+                'https://data.geopf.fr/wmts?' +
+                'REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0' +
+                '&LAYER=BNF-IGNF_GEOGRAPHICALGRIDSYSTEMS.CASSINI' +
+                '&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}' +
+                '&FORMAT=image/png&STYLE=normal',
+                {
+                    attribution: '© <a href="https://www.geoportail.gouv.fr/">IGN-BnF</a> · Carte de Cassini 1756–1815',
+                    maxZoom: 17,
+                    opacity: 0.72,
+                    // Tiles only exist for France; outside that they come back
+                    // transparent, so the CartoDB basemap shows through naturally.
+                }
+            );
+        }
+        cassiniLayer.addTo(map);
+    } else {
+        if (cassiniLayer) map.removeLayer(cassiniLayer);
+    }
+
+    document.getElementById('btn-cassini')?.classList.toggle('layer-on', cassiniOn);
+    document.getElementById('mb-cassini')?.classList.toggle('layer-on', cassiniOn);
+}
+
+// ── Rivers ────────────────────────────────────────────────
+let riverLayer = null;
+
+async function loadRivers() {
+    try {
+        // eu_rivers.json is pre-processed from Natural Earth 10 m global +
+        // ne_10m_rivers_europe supplement — far more detail than the 50 m
+        // GeoJSON we used before. Segments are [lat, lng] pairs (Leaflet-native).
+        const res = await fetch(
+            'https://raw.githubusercontent.com/cobiadigital/night_time_geoguesser/main/eu_rivers.json'
+        );
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const rivers = await res.json();
+
+        const lines = [];
+        for (const river of rivers) {
+            const name = river.name;
+            if (!name) continue;
+            const rank = river.scalerank ?? 6;
+
+            const style = {
+                color:   '#5ab4d4',
+                weight:  rank <= 2 ? 2.5 : rank <= 4 ? 1.8 : rank <= 6 ? 1.2 : rank <= 9 ? 0.9 : 0.7,
+                opacity: rank <= 2 ? 0.65 : rank <= 4 ? 0.54 : rank <= 6 ? 0.42 : rank <= 9 ? 0.32 : 0.22,
+                interactive: true,
+            };
+
+            const popupContent =
+                `<div style="font-family:Georgia,serif;text-align:center">
+                    <div style="font-size:9px;color:#4a7890;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">River</div>
+                    <div style="font-size:18px;color:#8ac8e8;font-style:italic;line-height:1.2">${name}</div>
+                 </div>`;
+
+            for (const seg of river.segments) {
+                const line = L.polyline(seg, style);
+                line.bindTooltip(name, { sticky: true, className: 'river-tip' });
+                line.on('click', e => {
+                    L.DomEvent.stopPropagation(e);
+                    L.popup({ className: 'river-pop', closeButton: true })
+                        .setLatLng(e.latlng)
+                        .setContent(popupContent)
+                        .openOn(map);
+                });
+                lines.push(line);
+            }
+        }
+
+        riverLayer = L.featureGroup(lines).addTo(map);
+        riverLayer.bringToBack();
+
+    } catch (err) {
+        console.warn('River data unavailable:', err);
+    }
+}
+
+// ── OpenHistoricalMap ─────────────────────────────────────
+const OHM_STYLE = 'https://openhistoricalmap.github.io/map-styles/main/main.json';
+
+let ohmLayer = null;
+let ohmOn    = false;
+let ohmYear  = 1770;
+let mlMap    = null;   // underlying MapLibre GL Map instance
+let _fbd     = null;   // filterByDate function
+
+async function getFilterByDate() {
+    if (_fbd) return _fbd;
+    try {
+        const mod = await import('https://cdn.jsdelivr.net/npm/@openhistoricalmap/maplibre-gl-dates/+esm');
+        _fbd = mod.filterByDate ?? mod.default?.filterByDate ?? null;
+    } catch (e) {
+        console.warn('[OHM] Date plugin unavailable — layer will display all eras:', e.message);
+    }
+    return _fbd;
+}
+
+function getMLMap() {
+    if (!ohmLayer) return null;
+    return (typeof ohmLayer.getMaplibreMap === 'function')
+        ? ohmLayer.getMaplibreMap()
+        : ohmLayer._glMap ?? null;
+}
+
+async function applyDateFilter() {
+    const m = mlMap || getMLMap();
+    if (!m) return;
+    const fbd = await getFilterByDate();
+    if (!fbd) return;
+    try {
+        if (m.isStyleLoaded()) {
+            fbd(m, String(ohmYear));
+        } else {
+            m.once('style.load', () => { try { fbd(m, String(ohmYear)); } catch(e){} });
+        }
+    } catch (e) {
+        console.warn('[OHM] filterByDate error:', e.message);
+    }
+}
+
+function setOhmBtnLabel(txt) {
+    document.getElementById('btn-ohm') && (document.getElementById('btn-ohm').textContent = txt);
+    document.getElementById('mb-ohm')  && (document.getElementById('mb-ohm').textContent  = txt === '⌛ OHM History' ? 'OHM' : txt.slice(0,8));
+}
+
+async function toggleOHM() {
+    if (typeof L.maplibreGL !== 'function') {
+        console.error('[OHM] maplibre-gl-leaflet not loaded — check CDN script tag');
+        alert('OpenHistoricalMap requires the MapLibre GL plugin to load. Please check your network connection and refresh.');
+        return;
+    }
+
+    ohmOn = !ohmOn;
+
+    document.getElementById('btn-ohm')?.classList.toggle('layer-on', ohmOn);
+    document.getElementById('mb-ohm')?.classList.toggle('layer-on', ohmOn);
+    document.getElementById('ohm-ctrl')?.classList.toggle('hidden', !ohmOn);
+    document.getElementById('m-ohm-ctrl')?.classList.toggle('hidden', !ohmOn);
+
+    if (ohmOn) {
+        if (!ohmLayer) {
+            setOhmBtnLabel('⏳ Loading…');
+            try {
+                // No custom pane — use the default overlayPane (z 400).
+                // A custom pane with createPane() initialises to 0×0 which
+                // prevents the WebGL canvas from rendering at all.
+                ohmLayer = L.maplibreGL({
+                    style: OHM_STYLE,
+                    attribution: '© <a href="https://www.openhistoricalmap.org/">OpenHistoricalMap</a> contributors',
+                }).addTo(map);
+
+                // Wait up to 5 s for the MapLibre GL Map instance to be ready
+                await new Promise((resolve, reject) => {
+                    let n = 0;
+                    const t = setInterval(() => {
+                        const m = getMLMap();
+                        if (m) { clearInterval(t); mlMap = m; resolve(); }
+                        else if (++n > 50) { clearInterval(t); reject(new Error('ML init timeout')); }
+                    }, 100);
+                });
+
+                // Don't apply a date filter on initial load — show all OHM
+                // features first so the layer is visibly working. The slider
+                // applies the filter when the user drags it.
+                setOhmBtnLabel('⌛ OHM History');
+
+            } catch (e) {
+                console.error('[OHM] Init failed:', e.message);
+                ohmOn = false;
+                ohmLayer = null;
+                setOhmBtnLabel('⌛ OHM History');
+                document.getElementById('btn-ohm')?.classList.remove('layer-on');
+                document.getElementById('mb-ohm')?.classList.remove('layer-on');
+                document.getElementById('ohm-ctrl')?.classList.add('hidden');
+                document.getElementById('m-ohm-ctrl')?.classList.add('hidden');
+            }
+        } else {
+            ohmLayer.addTo(map);
+        }
+    } else {
+        if (ohmLayer) map.removeLayer(ohmLayer);
+    }
+}
+
+async function updateOhmDate(year) {
+    ohmYear = parseInt(year, 10);
+    const label = String(ohmYear);
+    const v1 = document.getElementById('ohm-yr-val');
+    const v2 = document.getElementById('m-ohm-yr-val');
+    if (v1) v1.textContent = label;
+    if (v2) v2.textContent = label;
+    // Keep both sliders in sync when one is moved
+    const s1 = document.getElementById('ohm-slider');
+    const s2 = document.getElementById('m-ohm-slider');
+    if (s1 && s1 !== document.activeElement) s1.value = year;
+    if (s2 && s2 !== document.activeElement) s2.value = year;
+    await applyDateFilter();
+}
 
 // ── Init ───────────────────────────────────────────────────
+loadRivers();
 showOverview();
 </script>
 </body>
